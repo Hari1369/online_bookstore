@@ -2,6 +2,7 @@ from django import forms
 from datetime import datetime, date
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 import datetime
 
@@ -34,4 +35,53 @@ class SignupForm(forms.ModelForm):
             if password != confirm_password:
                 raise forms.ValidationError("Passwords do not match.")
 
+        return cleaned_data
+
+
+
+class LoginForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={
+                "placeholder": "Enter your email",
+                "autocomplete": "email"
+            }
+        )
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={
+                "placeholder": "Enter your password",
+                "autocomplete": "current-password"
+            }
+        )
+    )
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get("email")
+        password = cleaned_data.get("password")
+
+        if email and password:
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                raise forms.ValidationError(
+                    "Invalid email or password."
+                )
+
+            user = authenticate(
+                username=user.username,
+                password=password
+            )
+
+            if user is None:
+                raise forms.ValidationError(
+                    "Invalid email or password."
+                )
+
+            if not user.is_active:
+                raise forms.ValidationError(
+                    "This account is inactive."
+                )
+            cleaned_data["user"] = user
         return cleaned_data

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from .forms import SignupForm
+from .forms import SignupForm, LoginForm
+from django.contrib.auth import login
 
 
 
@@ -21,7 +22,16 @@ def signup_page(request):
 
 
 def login_page(request):
-    return render(request, "members/login.html")
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            user = form.cleaned_data["user"]
+            login(request, user)
+            return redirect("main")
+    else:
+        form = LoginForm()
+    return render(request, "members/login.html", {"form": form})
+
 
 
 def forgot_password(request):
