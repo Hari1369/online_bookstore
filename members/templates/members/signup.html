@@ -7,7 +7,10 @@
   <h1>Create an account</h1>
   <p class="sub">Takes less than a minute.</p>
   <div class="form-alert" id="formAlert"></div>
-  <form id="signupForm" novalidate>
+
+
+
+  <!-- <form id="signupForm" novalidate>
     <div class="field" id="f-name">
       <label for="name">Full name</label>
       <input id="name" name="name" type="text" autocomplete="name" required>
@@ -34,8 +37,62 @@
       <div class="err">Passwords don't match.</div>
     </div>
     <button class="btn btn-primary btn-block" type="submit">Create account</button>
-  </form>
-  <p class="form-note">Already have an account? <a href="login.html">Log in</a></p>
+  </form> -->
+
+
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="field" id="f-username">
+            <label>Username</label>
+            {{ form.username }}
+            <div class="form-errors">
+              {{ form.username.errors }}
+            </div>
+        </div>
+        <div class="field" id="f-first-name">
+            <label>First Name</label>
+            {{ form.first_name }}
+            <div class="form-errors">
+              {{ form.first_name.errors }}
+            </div>
+        </div>
+        <div class="field" id="f-last-name">
+            <label>Last Name</label>
+            {{ form.last_name }}
+            <div class="form-errors">
+              {{ form.last_name.errors }}
+            </div>
+        </div>
+        <div class="field" id="f-email">
+            <label>Email</label>
+            {{ form.email }}
+            <div class="form-errors">
+              {{ form.email.errors }}
+            </div>
+        </div>
+        <div class="field" id="f-password">
+            <label>Password</label>
+            {{ form.password }}
+            <div class="form-errors">
+              {{ form.password.errors }}
+            </div>
+        </div>
+        <div class="field" id="f-confirm">
+            <label>Confirm Password</label>
+            {{ form.confirm_password }}
+            <div class="form-errors">
+              {{ form.confirm_password.errors }}
+            </div>
+          </div>
+        <button type="submit" class="btn btn-primary btn-block">
+            Create account
+        </button>
+    </form>
+
+
+  <p class="form-note">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
 </main>
 {% endblock %}
 

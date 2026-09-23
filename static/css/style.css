@@ -216,3 +216,8 @@ img{max-width:100%; display:block;}
   .cart-table tr{border-bottom:1px solid var(--line); padding:10px 0;}
   .cart-table td{border:none; padding:4px 0;}
 }
+
+.form-errors .errorlist {
+    color: red;
+    margin-bottom: 15px;
+}

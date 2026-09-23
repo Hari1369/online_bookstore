@@ -21,39 +21,98 @@ function showAlert(message, isError) {
 /* ---------- Signup ---------- */
 const signupForm = document.getElementById('signupForm');
 if (signupForm) {
-  signupForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const password = document.getElementById('password').value;
-    const confirm = document.getElementById('confirm').value;
-    let valid = true;
+    signupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-    showFieldError('f-name', !name); if (!name) valid = false;
-    const emailOk = EMAIL_RE.test(email);
-    showFieldError('f-email', !emailOk); if (!emailOk) valid = false;
-    const phoneOk = !phone || PHONE_RE.test(phone);
-    showFieldError('f-phone', !phoneOk); if (!phoneOk) valid = false;
-    const passOk = password.length >= 8;
-    showFieldError('f-password', !passOk); if (!passOk) valid = false;
-    const confirmOk = password === confirm && confirm.length > 0;
-    showFieldError('f-confirm', !confirmOk); if (!confirmOk) valid = false;
+        const username = document.getElementById('username').value.trim();
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('confirm').value;
 
-    if (!valid) { showAlert('Please fix the highlighted fields.', true); return; }
+        let valid = true;
 
-    if (Users.findByEmail(email)) {
-      showFieldError('f-email', true);
-      showAlert('An account with that email already exists. Try logging in instead.', true);
-      return;
-    }
+        if (!username) {
+            showFieldError('f-username', true);
+            valid = false;
+        } else {
+            showFieldError('f-username', false);
+        }
 
-    Users.create({ name, email, phone, password, role: 'customer' });
-    Session.set({ name, email, role: 'customer' });
-    showAlert('Account created. Redirecting…', false);
-    setTimeout(() => location.href = 'index.html', 600);
-  });
+        if (!name) {
+            showFieldError('f-name', true);
+            valid = false;
+        } else {
+            showFieldError('f-name', false);
+        }
+
+        const emailOk = EMAIL_RE.test(email);
+
+        if (!emailOk) {
+            showFieldError('f-email', true);
+            valid = false;
+        } else {
+            showFieldError('f-email', false);
+        }
+
+        const phoneOk = !phone || PHONE_RE.test(phone);
+
+        if (!phoneOk) {
+            showFieldError('f-phone', true);
+            valid = false;
+        } else {
+            showFieldError('f-phone', false);
+        }
+
+        const passOk = password.length >= 8;
+        if (!passOk) {
+            showFieldError('f-password', true);
+            valid = false;
+        } else {
+            showFieldError('f-password', false);
+        }
+
+        const confirmOk = password === confirm && confirm.length > 0;
+
+        if (!confirmOk) {
+            showFieldError('f-confirm', true);
+            valid = false;
+        } else {
+            showFieldError('f-confirm', false);
+        }
+
+        if (!valid) {
+            showAlert('Please fix the highlighted fields.', true);
+        } else {
+            if (Users.findByEmail(email)) {
+                showFieldError('f-email', true);
+                showAlert(
+                    'An account with that email already exists. Try logging in instead.',
+                    true
+                );
+            } else {
+                Users.create({
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    password: password,
+                    role: 'customer'
+                });
+                Session.set({
+                    name: name,
+                    email: email,
+                    role: 'customer'
+                });
+                showAlert('Account created. Redirecting…', false);
+                setTimeout(() => {
+                    location.href = 'index.html';
+                }, 600);
+            }
+        }
+    });
 }
+
 
 /* ---------- Login ---------- */
 const loginForm = document.getElementById('loginForm');
