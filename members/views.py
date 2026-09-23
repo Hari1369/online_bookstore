@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .forms import SignupForm, LoginForm
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 
 
@@ -34,6 +34,9 @@ def login_page(request):
         form = LoginForm()
     return render(request, "members/login.html", {"form": form})
 
+def logout_page(request):
+    logout(request)
+    return redirect("login")
 
 def show_users(request):
     user_data = User.objects.all()
