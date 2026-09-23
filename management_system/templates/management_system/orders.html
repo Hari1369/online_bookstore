@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Order history — Online Bookstore{% endblock %}
+
+{% block content %}
+<main class="wrap section">
+  <h1 id="ordersHeading">Your orders</h1>
+  <div id="orderNote"></div>
+  <div id="ordersRoot"></div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/orders.js' %}"></script>
+{% endblock %}

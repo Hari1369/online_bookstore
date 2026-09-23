@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}User management — Marginalia{% endblock %}
+
+{% block content %}
+<main class="wrap section">
+  <div class="section-head">
+    <h1 style="margin:0;">All users</h1>
+  </div>
+  <div id="adminUsersRoot"></div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/admin-users.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Online Bookstore{% endblock %}</title>
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<div id="navbar"></div>
+
+{% block content %}{% endblock %}
+
+<footer class="site-footer">
+  <div class="wrap">Online Bookstore — </div>
+</footer>
+
+<div id="modalRoot"></div>
+
+<script src="{% static 'js/store.js' %}"></script>
+<script src="{% static 'js/data.js' %}"></script>
+<script src="{% static 'js/navbar.js' %}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

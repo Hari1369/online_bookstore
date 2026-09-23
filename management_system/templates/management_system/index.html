@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Online Bookstore — books for fiction, non-fiction & academic readers{% endblock %}
+
+{% block content %}
+<header class="hero">
+  <div class="wrap">
+    <h1>Read in the margins of everything else.</h1>
+    <p class="lede">A small catalogue of fiction, non-fiction and academic titles, picked for readers who annotate. Browse by category or search by title and author.</p>
+    <div class="chip-row" id="categoryChips">
+      <button class="chip active" data-cat="all">All books</button>
+      <button class="chip" data-cat="fiction">Fiction</button>
+      <button class="chip" data-cat="non-fiction">Non-fiction</button>
+      <button class="chip" data-cat="academic">Academic</button>
+    </div>
+  </div>
+</header>
+
+<main class="section">
+  <div class="wrap">
+    <div id="adminBar"></div>
+    <div class="section-head">
+      <h2 id="resultsHeading">All books</h2>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <label for="priceSort" class="visually-hidden">Sort by price</label>
+        <select id="priceSort" style="padding:8px 10px; border-radius:3px; border:1px solid var(--line); font-family:var(--sans);">
+          <option value="">Sort: featured</option>
+          <option value="asc">Price: low to high</option>
+          <option value="desc">Price: high to low</option>
+        </select>
+      </div>
+    </div>
+    <div class="book-grid" id="bookGrid"></div>
+  </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/main.js' %}"></script>
+{% endblock %}

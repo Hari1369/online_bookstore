@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Your cart — Online Bookstore{% endblock %}
+
+{% block content %}
+<main class="wrap section">
+  <h1>Your cart</h1>
+  <div id="cartRoot"></div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/cart-page.js' %}"></script>
+{% endblock %}

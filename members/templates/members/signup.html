@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Sign up — Online Bookstore{% endblock %}
+
+{% block content %}
+<main class="form-page">
+  <h1>Create an account</h1>
+  <p class="sub">Takes less than a minute.</p>
+  <div class="form-alert" id="formAlert"></div>
+  <form id="signupForm" novalidate>
+    <div class="field" id="f-name">
+      <label for="name">Full name</label>
+      <input id="name" name="name" type="text" autocomplete="name" required>
+      <div class="err">Enter your name.</div>
+    </div>
+    <div class="field" id="f-email">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required>
+      <div class="err">Enter a valid email address.</div>
+    </div>
+    <div class="field" id="f-phone">
+      <label for="phone">Phone <span style="font-weight:400;color:var(--ink-soft);">(optional)</span></label>
+      <input id="phone" name="phone" type="tel" autocomplete="tel">
+      <div class="err">Enter a valid phone number, or leave this blank.</div>
+    </div>
+    <div class="field" id="f-password">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="new-password" required>
+      <div class="err">Password must be at least 8 characters.</div>
+    </div>
+    <div class="field" id="f-confirm">
+      <label for="confirm">Confirm password</label>
+      <input id="confirm" name="confirm" type="password" autocomplete="new-password" required>
+      <div class="err">Passwords don't match.</div>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">Create account</button>
+  </form>
+  <p class="form-note">Already have an account? <a href="login.html">Log in</a></p>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/auth.js' %}"></script>
+{% endblock %}

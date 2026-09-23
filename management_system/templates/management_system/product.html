@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Book — Online Bookstore{% endblock %}
+
+{% block content %}
+<main class="wrap" id="productRoot">
+  <!-- filled by js/product.js -->
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/product.js' %}"></script>
+{% endblock %}
