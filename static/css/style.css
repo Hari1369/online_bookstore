@@ -221,3 +221,349 @@ img{max-width:100%; display:block;}
     color: red;
     margin-bottom: 15px;
 }
+
+.users-table-container {
+    width: 100%;
+    margin-top: 30px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 1px solid #ddd;
+}
+
+/* Headers */
+.users-table th {
+    padding: 20px 24px;
+    background: #f3f4f6;
+    border-bottom: 2px solid #ccc;
+
+    text-align: left;
+    font-size: 16px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+/* Data */
+.users-table td {
+    padding: 22px 24px;
+    border-bottom: 1px solid #ddd;
+
+    font-size: 16px;
+    color: #333;
+
+    vertical-align: middle;
+}
+
+/* Give each column real space */
+
+.users-table th:nth-child(1),
+.users-table td:nth-child(1) {
+    width: 16%;
+}
+
+.users-table th:nth-child(2),
+.users-table td:nth-child(2) {
+    width: 16%;
+}
+
+.users-table th:nth-child(3),
+.users-table td:nth-child(3) {
+    width: 27%;
+}
+
+.users-table th:nth-child(4),
+.users-table td:nth-child(4) {
+    width: 10%;
+    text-align: center;
+}
+
+.users-table th:nth-child(5),
+.users-table td:nth-child(5) {
+    width: 11%;
+    text-align: center;
+}
+
+.users-table th:nth-child(6),
+.users-table td:nth-child(6) {
+    width: 10%;
+    white-space: nowrap;
+}
+
+.users-table th:nth-child(7),
+.users-table td:nth-child(7) {
+    width: 10%;
+    white-space: nowrap;
+}
+
+/* Email */
+.email-column {
+    word-break: break-word;
+}
+
+/* Status */
+.status-active {
+    color: green;
+    font-weight: 600;
+}
+
+.status-inactive {
+    color: red;
+    font-weight: 600;
+}
+
+/* Hover */
+.users-table tbody tr:hover {
+    background: #f8f8f8;
+}
+
+/* Empty */
+.no-users {
+    text-align: center;
+    padding: 40px !important;
+    color: #777;
+}
+
+
+
+
+
+
+
+/* =========================
+   BOOK CATEGORY PAGE GRID
+   ========================= */
+
+.category-page {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 24px;
+}
+
+.category-header {
+    margin-bottom: 24px;
+}
+
+.category-header h1 {
+    font-size: 2.2rem;
+    margin: 0;
+}
+
+/* 2-Column Form Layout */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+/* Unified Card Container Styling */
+.category-card {
+    background: var(--card, #ffffff);
+    border: 1px solid var(--line, #ddd);
+    border-radius: var(--radius, 8px);
+    padding: 28px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+}
+
+.category-card h2 {
+    font-size: 1.3rem;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line, #eee);
+}
+
+/* Forms Alignment */
+.category-card form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
+}
+
+.category-card .form-group {
+    margin-bottom: 20px;
+}
+
+.category-card label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.category-card input[type="text"],
+.category-card input[type="file"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line, #ccc);
+    border-radius: var(--radius, 4px);
+    background: #fff;
+    font-size: 0.95rem;
+}
+
+.category-card input[type="file"] {
+    padding: 8px;
+}
+
+.form-error {
+    color: var(--error, #b3442f);
+    font-size: 0.85rem;
+    margin-top: 6px;
+}
+
+/* Table Card Styling */
+.category-card.table-card {
+    padding: 28px;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.category-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+.category-table th {
+    background: #f8f9fa;
+    color: var(--ink, #1d2b26);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 14px 16px;
+    border-bottom: 2px solid var(--line, #e2e8f0);
+    text-align: left;
+}
+
+.category-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line, #edf2f7);
+    font-size: 0.95rem;
+    color: var(--ink, #333);
+}
+
+.category-table tbody tr:hover {
+    background-color: #fbfbfa;
+}
+
+.category-table .col-id {
+    width: 100px;
+    text-align: center;
+}
+
+.category-table .col-name {
+    text-align: left;
+}
+
+.category-table .no-data {
+    text-align: center;
+    padding: 32px;
+    color: var(--ink-soft, #777);
+    font-style: italic;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.modal-overlay {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.5);
+
+    z-index: 1000;
+
+    justify-content: center;
+    align-items: center;
+}
+
+
+.modal-box {
+    width: 400px;
+
+    background: #ffffff;
+
+    padding: 30px;
+
+    border-radius: 8px;
+
+    box-sizing: border-box;
+
+    position: relative;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+
+.modal-box h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+
+
+.modal-close {
+    position: absolute;
+
+    top: 10px;
+    right: 15px;
+
+    border: none;
+    background: none;
+
+    font-size: 28px;
+
+    cursor: pointer;
+}
+
+
+.modal-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+
+.btn-secondary {
+    background: #ddd;
+    color: #333;
+}

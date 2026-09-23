@@ -9,18 +9,18 @@ function renderNavbar() {
   mount.innerHTML = `
     <nav class="site-nav">
       <div class="wrap">
-        <a class="brand" href="index.html">Online Bookstore</a>
+        <a class="brand" href="{% url 'main' %}">Online Bookstore</a>
         <form class="nav-search" id="navSearchForm" role="search">
           <label for="navSearchInput" class="visually-hidden">Search books</label>
           <input id="navSearchInput" type="search" placeholder="Search titles or authors…" />
         </form>
         <div class="nav-links">
-          <a href="index.html">Browse</a>
-          <a href="cart.html">Cart${cartCount ? `<span class="cart-count">${cartCount}</span>` : ''}</a>
-          ${user ? `<a href="orders.html">Orders</a>` : ''}
+          <a href="{% url 'main' %}">Browse</a>
+          <a href="{% url 'cart' %}">Cart${cartCount ? `<span class="cart-count">${cartCount}</span>` : ''}</a>
+          ${user ? `<a href="{% url 'orders' %}">Orders</a>` : ''}
           ${user
             ? `<a href="#" id="navLogout">Log out (${escapeHTML(user.name.split(' ')[0])})</a>`
-            : `<a href="login.html">Log in</a><a href="signup.html">Sign up</a>`
+            : `<a href="{% url 'login' %}">Log in</a><a href="{% url 'signup' %}">Sign up</a>`
           }
         </div>
       </div>
