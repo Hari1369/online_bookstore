@@ -21,6 +21,7 @@ class ProductBookDetails(models.Model):
     price = models.DecimalField(max_digits=10,decimal_places=2)
     publication_year = models.IntegerField()
     image = models.ImageField(upload_to="images/books/", null=True,blank=True)
+    pdf = models.FileField(upload_to="books/pdf/", null=True, blank=True)
     total_copies = models.PositiveIntegerField(default=0)
     available_copies = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)

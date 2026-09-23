@@ -57,117 +57,79 @@
     
 
 
-<div class="category-card table-card">
-    <h2>Existing Categories</h2>
+    <div class="category-card table-card">
+        <h2>Existing Categories</h2>
 
-    <div class="table-responsive">
-        <table class="category-table">
-            <thead>
-                <tr>
-                    <th class="col-id">ID</th>
-                    <th class="col-name">Book Category</th>
-                    <th class="col-action">Action</th>
-                </tr>
-            </thead>
+        <div class="table-responsive">
+            <table class="category-table">
+                <thead>
+                    <tr>
+                        <th class="col-id">ID</th>
+                        <th class="col-name">Book Category</th>
+                        <th class="col-action">Action</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                {% for category in categories %}
-                <tr>
-                    <td class="col-id">
-                        {{ category.id }}
-                    </td>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td class="col-id">
+                            {{ category.id }}
+                        </td>
 
-                    <td class="col-name">
-                        {{ category.choice }}
-                    </td>
+                        <td class="col-name">
+                            {{ category.choice }}
+                        </td>
 
-                    <td class="col-action">
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            onclick="openUpdateModal(
-                                '{{ category.id }}',
-                                '{{ category.choice|escapejs }}'
-                            )">
-                            Update
-                        </button>
-                    </td>
-                </tr>
+                        <td class="col-action">
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                onclick="openUpdateModal(
+                                    '{{ category.id }}',
+                                    '{{ category.choice|escapejs }}'
+                                )">
+                                Update
+                            </button>
+                        </td>
+                    </tr>
 
-                {% empty %}
-                <tr>
-                    <td colspan="3" class="no-data">
-                        No book categories available.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-
-<div id="updateCategoryModal" class="modal-overlay">
-
-    <div class="modal-box">
-
-        <button
-            type="button"
-            class="modal-close"
-            onclick="closeUpdateModal()">
-            &times;
-        </button>
-
-        <h2>Update Category</h2>
-
-        <div class="form-group">
-
-            <label for="updateCategoryName">
-                Category Name
-            </label>
-
-            <input
-                type="text"
-                id="updateCategoryName"
-                class="category-input"
-                required
-            >
-
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="no-data">
+                            No book categories available.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-
-        <div class="modal-actions">
-
-            <button
-                type="button"
-                class="btn btn-secondary"
-                onclick="closeUpdateModal()">
-                Cancel
-            </button>
-
-            <button
-                type="button"
-                class="btn btn-primary"
-                onclick="submitCategoryUpdate()">
-                Update Category
-            </button>
-
-        </div>
-
     </div>
 
-</div>
 
+    <div id="updateCategoryModal" class="modal-overlay">
+        <div class="modal-box">
+            <button type="button" class="modal-close" onclick="closeUpdateModal()"> &times;</button>
+            <h2>Update Category</h2>
+            <div class="form-group">
+                <label for="updatenamecategory"> Category Name </label>
+                <input type="text" id="updatenamecategory" class="category-input" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeUpdateModal()"> Cancel </button>
+                <button type="button" class="btn btn-primary" onclick="submitCategoryUpdate()"> Update Category </button>
+            </div>
+        </div>
+    </div>
 </main>
 
 
 <script>
 function updateCategory(categoryId, currentCategory) {
     const newCategory = prompt("Enter new category name:", currentCategory);
-
     if (newCategory === null) {
         return;
     }
-
     const categoryName = newCategory.trim();
 
     if (!categoryName) {
@@ -176,33 +138,24 @@ function updateCategory(categoryId, currentCategory) {
     }
 
     fetch(`/update_category/${categoryId}/`, {
-
         method: "PUT",
-
         headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": "{{ csrf_token }}"
         },
-
         body: JSON.stringify({
             choice: categoryName
         })
     })
-
     .then(response => response.json())
-
     .then(data => {
-
         if (data.error) {
             alert(data.error);
             return;
         }
-
         alert(data.message);
-
         location.reload();
     })
-
     .catch(error => {
         console.error(error);
         alert("Something went wrong.");
@@ -212,7 +165,7 @@ function updateCategory(categoryId, currentCategory) {
 var selectedCategoryId = null;
 function openUpdateModal(id, categoryName) {
     selectedCategoryId = id;
-    document.getElementById("updateCategoryName").value = categoryName;
+    document.getElementById("updatenamecategory").value = categoryName;
     document.getElementById("updateCategoryModal").style.display = "flex";
 }
 
@@ -224,7 +177,7 @@ function closeUpdateModal() {
 
 
 function submitCategoryUpdate() {
-    const categoryName = document.getElementById("updateCategoryName").value.trim();
+    const categoryName = document.getElementById("updatenamecategory").value.trim();
     if (!categoryName) {
         alert("Category name cannot be empty.");
         return;

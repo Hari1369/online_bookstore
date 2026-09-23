@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import ProductBookCategory
-from .forms import (ProductBookCategoryForm, BookCategoryCSVForm)
+from .forms import (ProductBookCategoryForm, BookCategoryCSVForm, ProductBookDetailsForm) 
 from django.contrib import messages
 from django.http import JsonResponse
 import csv
@@ -21,8 +21,17 @@ def orders_page(request):
     return render(request, "management_system/orders.html")
 
 def product_page(request):
-    return render(request, "management_system/product.html")
-
+    if request.method == "POST":
+        form = ProductBookDetailsForm(
+            request.POST,
+            request.FILES
+        )
+        if form.is_valid():
+            form.save()
+            return redirect("product")
+    else:
+        form = ProductBookDetailsForm()
+    return render(request,"management_system/product.html",{"form": form})
 
 
 def product_category_page(request):
