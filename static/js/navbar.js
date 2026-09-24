@@ -13,11 +13,13 @@ function renderNavbar() {
     orders: mount.dataset.ordersUrl || '#',
     login: mount.dataset.loginUrl || '#',
     signup: mount.dataset.signupUrl || '#',
-    logout: mount.dataset.logoutUrl || ''
+    logout: mount.dataset.logoutUrl || '',
+    users: mount.dataset.usersUrl || '#'
   };
 
   // Real login state from Django (set in base.html)
   const isLoggedIn = mount.dataset.authenticated === 'true';
+  const isAdmin = mount.dataset.isAdmin === 'true';   // superuser only
   const displayName = (mount.dataset.userName || 'Account').split(' ')[0];
   const cartCount = Cart.count();
 
@@ -33,6 +35,7 @@ function renderNavbar() {
           <a href="${urls.main}">Browse</a>
           <a href="${urls.cart}">Cart${cartCount ? `<span class="cart-count">${cartCount}</span>` : ''}</a>
           ${isLoggedIn ? `<a href="${urls.orders}">Orders</a>` : ''}
+          ${isAdmin ? `<a href="${urls.users}">Users</a>` : ''}
           ${isLoggedIn
             ? `<a href="${urls.logout}" id="navLogout">Log out (${escapeHTML(displayName)})</a>`
             : `<a href="${urls.login}">Log in</a><a href="${urls.signup}">Sign up</a>`

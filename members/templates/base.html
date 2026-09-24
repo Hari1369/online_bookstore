@@ -16,18 +16,19 @@
      data-login-url="{% url 'login' %}"
      data-signup-url="{% url 'signup' %}"
      data-logout-url="{% url 'logout' %}"
+     data-users-url="{% url 'show_users' %}"
      data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
      data-user-name="{{ user.first_name|default:user.username }}"
-     data-is-staff="{% if user.is_staff %}true{% else %}false{% endif %}">
+     data-is-admin="{% if user.is_superuser %}true{% else %}false{% endif %}">
 </div>
 
 {% block content %}{% endblock %}
 
 <div id="modalRoot"></div>
 
-<script src="{% static 'js/store.js' %}?v=2"></script>
-<script src="{% static 'js/data.js' %}?v=2"></script>
-<script src="{% static 'js/navbar.js' %}?v=2"></script>
+<script src="{% static 'js/store.js' %}?v=3"></script>
+<script src="{% static 'js/data.js' %}?v=3"></script>
+<script src="{% static 'js/navbar.js' %}?v=3"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

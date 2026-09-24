@@ -5,8 +5,11 @@ from django.contrib import messages
 from django.http import JsonResponse
 import csv
 import json
-
-
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from members.decorators import admin_required, admin_api_required
 
 def index_page(request):
     # Query all active books and prefetch foreign key relations for optimal database calls
@@ -27,6 +30,7 @@ def cart_page(request):
 def orders_page(request):
     return render(request, "management_system/orders.html")
 
+@admin_required
 def product_page(request):
     if request.method == "POST":
         form = ProductBookDetailsForm(
@@ -40,7 +44,7 @@ def product_page(request):
         form = ProductBookDetailsForm()
     return render(request,"management_system/product.html",{"form": form})
 
-
+@admin_required
 def product_category_page(request):
     category_form = ProductBookCategoryForm()
     csv_form = BookCategoryCSVForm()
@@ -110,7 +114,8 @@ def product_category_page(request):
     )
 
 
-
+@require_http_methods(["PUT"])
+@admin_api_required
 def update_category(request, category_id):
     if request.method == "PUT":
         category = ProductBookCategory.objects.get(id=category_id)

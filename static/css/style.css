@@ -820,3 +820,55 @@ img{max-width:100%; display:block;}
     color: #6b7280;
     font-size: 0.88rem;
 }
+
+
+
+  /* ---- Users table layout (8 columns, incl. Actions) ---- */
+  .users-table-container { overflow-x: auto; }          /* scroll on small screens instead of squashing */
+  .users-table { min-width: 960px; }
+  .users-table th,
+  .users-table td { padding: 16px 14px; font-size: 15px; }
+
+  /* Re-declare widths so all 8 columns add up to 100% */
+  .users-table th:nth-child(1), .users-table td:nth-child(1) { width: 11%; }
+  .users-table th:nth-child(2), .users-table td:nth-child(2) { width: 11%; }
+  .users-table th:nth-child(3), .users-table td:nth-child(3) { width: 23%; }
+  .users-table th:nth-child(4), .users-table td:nth-child(4) { width: 7%;  text-align: center; }
+  .users-table th:nth-child(5), .users-table td:nth-child(5) { width: 9%;  text-align: center; }
+  .users-table th:nth-child(6), .users-table td:nth-child(6) { width: 12%; white-space: normal; } /* date / time wrap onto 2 lines */
+  .users-table th:nth-child(7), .users-table td:nth-child(7) { width: 12%; white-space: normal; }
+  .users-table th:nth-child(8), .users-table td:nth-child(8) { width: 15%; text-align: center; white-space: nowrap; }
+
+  /* Edit + Delete stay side by side */
+  .actions-column { white-space: nowrap; }
+  .edit-user-btn,
+  .delete-user-btn {
+    display: inline-block; vertical-align: middle;
+    padding: 6px 12px; font-size: .85rem; line-height: 1.2;
+    border-radius: 3px; cursor: pointer; background: transparent;
+  }
+  .edit-user-btn { border: 1px solid var(--line, #ccc); color: inherit; }
+  .edit-user-btn:hover { background: rgba(0,0,0,.06); }
+  .delete-user-btn { margin-left: 6px; border: 1px solid #b3261e; color: #b3261e; }
+  .delete-user-btn:hover:not(:disabled) { background: #b3261e; color: #fff; }
+  .delete-user-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  #editUserDialog { border: none; border-radius: 6px; padding: 24px; width: min(440px, 92vw); }
+  #editUserDialog::backdrop { background: rgba(0,0,0,.5); }
+  #editUserDialog h2 { margin: 0 0 14px; }
+  #editUserDialog .field { margin-bottom: 12px; }
+  #editUserDialog label { display: block; font-size: .85rem; margin-bottom: 4px; }
+  #editUserDialog input[type="text"],
+  #editUserDialog input[type="email"] {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--line, #ccc);
+    border-radius: 3px; box-sizing: border-box;
+  }
+  #editUserDialog .check-row { display: flex; align-items: center; gap: 8px; }
+  #editUserDialog .check-row label { margin: 0; }
+  #editUserDialog .dialog-actions { display: flex; gap: 10px; margin-top: 16px; }
+  #editUserDialog .dialog-actions button { flex: 1; padding: 9px; cursor: pointer; }
+  #editUserError { color: #b3261e; font-size: .88rem; min-height: 1.2em; margin-bottom: 6px; }
+  #userToast {
+    position: fixed; bottom: 20px; right: 20px; background: #1d2b26; color: #fff;
+    padding: 10px 16px; border-radius: 4px; display: none; z-index: 100;
+  }

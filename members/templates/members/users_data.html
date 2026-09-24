@@ -3,18 +3,16 @@
 
 {% block title %}User Management — Marginalia{% endblock %}
 
+{% block extra_head %}
+{% endblock %}
+
 {% block content %}
-
 <main class="wrap section">
-
     <div class="section-head">
         <h1 style="margin:0;">All Users</h1>
     </div>
-
     <div class="users-table-container">
-
         <table class="users-table">
-
             <thead>
                 <tr>
                     <th>First Name</th>
@@ -24,49 +22,56 @@
                     <th>Status</th>
                     <th>Date Joined</th>
                     <th>Last Login</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
 
             <tbody>
+                {% for u in users %}
+                <tr id="user-row-{{ u.id }}"
+                    data-id="{{ u.id }}"
+                    data-url="{% url 'update_user' u.id %}"
+                    data-delete-url="{% url 'delete_user' u.id %}"
+                    data-self="{% if u.id == request.user.id %}true{% else %}false{% endif %}"
+                    data-first-name="{{ u.first_name }}"
+                    data-last-name="{{ u.last_name }}"
+                    data-email="{{ u.email }}"
+                    data-is-staff="{% if u.is_staff %}true{% else %}false{% endif %}"
+                    data-is-active="{% if u.is_active %}true{% else %}false{% endif %}">
 
-                {% for user in users %}
+                    <td class="c-first">{{ u.first_name }}</td>
 
-                <tr>
+                    <td class="c-last">{{ u.last_name }}</td>
 
-                    <td>{{ user.first_name }}</td>
+                    <td class="email-column c-email">{{ u.email }}</td>
 
-                    <td>{{ user.last_name }}</td>
+                    <td class="center-column c-staff">{% if u.is_staff %}Yes{% else %}No{% endif %}</td>
 
-                    <td class="email-column">
-                        {{ user.email }}
-                    </td>
-
-                    <td class="center-column">
-                        {% if user.is_staff %}
-                            Yes
-                        {% else %}
-                            No
-                        {% endif %}
-                    </td>
-
-                    <td class="center-column">
-                        {% if user.is_active %}
+                    <td class="center-column c-status">
+                        {% if u.is_active %}
                             <span class="status-active">Active</span>
                         {% else %}
                             <span class="status-inactive">Inactive</span>
                         {% endif %}
                     </td>
 
-                    <td class="date-column">
-                        {{ user.date_joined|date:"d-m-Y H:i:s" }}
-                    </td>
+                    <td class="date-column">{{ u.date_joined|date:"d-m-Y H:i:s" }}</td>
 
                     <td class="date-column">
-                        {% if user.last_login %}
-                            {{ user.last_login|date:"d-m-Y H:i:s" }}
+                        {% if u.last_login %}
+                            {{ u.last_login|date:"d-m-Y H:i:s" }}
                         {% else %}
                             Never
                         {% endif %}
+                    </td>
+
+                    <td class="center-column actions-column">
+                        <button type="button" class="edit-user-btn">Edit</button>
+                        <button type="button" class="delete-user-btn"
+                                {% if u.id == request.user.id %}disabled title="You cannot delete your own account"
+                                {% elif not u.is_active %}disabled title="Already inactive"{% endif %}>
+                            Delete
+                        </button>
                     </td>
 
                 </tr>
@@ -74,9 +79,7 @@
                 {% empty %}
 
                 <tr>
-                    <td colspan="7" class="no-users">
-                        No users found.
-                    </td>
+                    <td colspan="8" class="no-users">No users found.</td>
                 </tr>
 
                 {% endfor %}
@@ -88,5 +91,164 @@
     </div>
 
 </main>
+<dialog id="editUserDialog">
+    <h2>Edit user</h2>
+    <form id="editUserForm" novalidate>
+        {% csrf_token %}
+        <div class="field">
+            <label for="eu_first_name">First name</label>
+            <input id="eu_first_name" type="text" name="first_name">
+        </div>
+        <div class="field">
+            <label for="eu_last_name">Last name</label>
+            <input id="eu_last_name" type="text" name="last_name">
+        </div>
+        <div class="field">
+            <label for="eu_email">Email</label>
+            <input id="eu_email" type="email" name="email" required>
+        </div>
+        <div class="field check-row">
+            <input id="eu_is_staff" type="checkbox" name="is_staff">
+            <label for="eu_is_staff">Staff</label>
+        </div>
+        <div class="field check-row">
+            <input id="eu_is_active" type="checkbox" name="is_active">
+            <label for="eu_is_active">Active</label>
+        </div>
 
+        <div id="editUserError" role="alert"></div>
+
+        <div class="dialog-actions">
+            <button type="submit" class="btn btn-primary" id="editUserSave">Save changes</button>
+            <button type="button" class="btn btn-outline" id="editUserCancel">Cancel</button>
+        </div>
+    </form>
+</dialog>
+
+<div id="userToast"></div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const dialog   = document.getElementById('editUserDialog');
+  const form     = document.getElementById('editUserForm');
+  const errorBox = document.getElementById('editUserError');
+  const saveBtn  = document.getElementById('editUserSave');
+  const toast    = document.getElementById('userToast');
+  const csrf     = form.querySelector('[name=csrfmiddlewaretoken]').value;
+  let currentRow = null;
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 2200);
+  }
+
+  // Refresh a table row from the user data the server returned
+  function applyUserToRow(row, u) {
+    const d = row.dataset;
+    d.firstName = u.first_name;  d.lastName = u.last_name;  d.email = u.email;
+    d.isStaff = String(u.is_staff);  d.isActive = String(u.is_active);
+
+    row.querySelector('.c-first').textContent = u.first_name;
+    row.querySelector('.c-last').textContent  = u.last_name;
+    row.querySelector('.c-email').textContent = u.email;
+    row.querySelector('.c-staff').textContent = u.is_staff ? 'Yes' : 'No';
+    row.querySelector('.c-status').innerHTML = u.is_active
+      ? '<span class="status-active">Active</span>'
+      : '<span class="status-inactive">Inactive</span>';
+
+    const delBtn = row.querySelector('.delete-user-btn');
+    if (d.self !== 'true') {
+      delBtn.disabled = !u.is_active;
+      delBtn.title = u.is_active ? '' : 'Already inactive';
+    }
+  }
+
+  document.querySelectorAll('.delete-user-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const row = btn.closest('tr');
+      const email = row.dataset.email || 'this user';
+      if (!confirm('Delete ' + email + '?\n\nThe account will be deactivated and can no longer log in. You can restore it later with Edit → Active.')) return;
+
+      btn.disabled = true;
+      try {
+        const res = await fetch(row.dataset.deleteUrl, {
+          method: 'DELETE',
+          headers: { 'X-CSRFToken': csrf }
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          btn.disabled = false;
+          showToast(data.error || 'Could not delete the user.');
+          return;
+        }
+        applyUserToRow(row, data.user);
+        showToast('User deleted (deactivated)');
+      } catch (err) {
+        btn.disabled = false;
+        showToast('Network error. Please try again.');
+      }
+    });
+  });
+
+  document.querySelectorAll('.edit-user-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentRow = btn.closest('tr');
+      const d = currentRow.dataset;
+      form.elements.first_name.value = d.firstName;
+      form.elements.last_name.value  = d.lastName;
+      form.elements.email.value      = d.email;
+      form.elements.is_staff.checked  = d.isStaff === 'true';
+      form.elements.is_active.checked = d.isActive === 'true';
+      errorBox.textContent = '';
+      dialog.showModal();
+    });
+  });
+
+  document.getElementById('editUserCancel').addEventListener('click', () => dialog.close());
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.textContent = '';
+    saveBtn.disabled = true;
+
+    const payload = {
+      first_name: form.elements.first_name.value.trim(),
+      last_name:  form.elements.last_name.value.trim(),
+      email:      form.elements.email.value.trim(),
+      is_staff:   form.elements.is_staff.checked,
+      is_active:  form.elements.is_active.checked
+    };
+
+    try {
+      const res = await fetch(currentRow.dataset.url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrf
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        errorBox.textContent = data.error || 'Could not update the user.';
+        return;
+      }
+
+      applyUserToRow(currentRow, data.user);
+
+      dialog.close();
+      showToast('User updated');
+    } catch (err) {
+      errorBox.textContent = 'Network error. Please try again.';
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+})();
+</script>
 {% endblock %}
