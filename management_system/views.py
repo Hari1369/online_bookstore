@@ -1,14 +1,11 @@
 from django.shortcuts import render, redirect
-from .models import ProductBookCategory, ProductBookDetails, CartManagement, CartItem, Order, OrderItem
-from .forms import (ProductBookCategoryForm, BookCategoryCSVForm, ProductBookDetailsForm) 
+
 from django.contrib import messages
 from django.http import JsonResponse
 import csv
 import json
-from django.views.decorators.http import require_http_methods
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from members.decorators import admin_required, admin_api_required
 import uuid
 from collections import defaultdict
 from decimal import Decimal
@@ -19,9 +16,12 @@ from django.http.request import RawPostDataException
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
+from members.decorators import admin_required, admin_api_required
 
 from members.decorators import admin_api_required, login_required_api, login_required_page
-from .models import CartItem, CartManagement, Order, OrderItem, ProductBookDetails
+from .models import CartItem, CartManagement, Order, OrderItem, ProductBookDetails, ProductBookCategory
+from .forms import (ProductBookCategoryForm, BookCategoryCSVForm, ProductBookDetailsForm) 
+from django.views.decorators.http import require_http_methods
 
 
 def _json_body(request):
@@ -32,15 +32,11 @@ def _json_body(request):
     return data if isinstance(data, dict) else None
 
 
-
 def index_page(request):
     books = ProductBookDetails.objects.filter(is_active=True).select_related('category')
     categories = ProductBookCategory.objects.all()
 
-    context = {
-        'books': books,
-        'categories': categories,
-    }
+    context = {'books': books, 'categories': categories}
     return render(request, "management_system/index.html", context)
 
 
