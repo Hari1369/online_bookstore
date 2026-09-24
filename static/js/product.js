@@ -30,20 +30,42 @@ function renderProduct() {
       </div>
     </div>`;
 
-  const qtyInput = document.getElementById('qtyInput');
-  document.getElementById('qtyMinus').addEventListener('click', () => {
-    qtyInput.value = Math.max(1, Number(qtyInput.value) - 1);
-  });
-  document.getElementById('qtyPlus').addEventListener('click', () => {
-    qtyInput.value = Number(qtyInput.value) + 1;
-  });
-  document.getElementById('addToCartBtn').addEventListener('click', () => {
-    Cart.add(book.id, Math.max(1, Number(qtyInput.value) || 1));
-    renderNavbar();
-    const note = document.getElementById('addedNote');
-    note.style.display = 'inline';
-    setTimeout(() => note.style.display = 'none', 1500);
-  });
+
+
+    const qtyInput = document.getElementById("qtyInput");
+    const qtyMinus = document.getElementById("qtyMinus");
+    const qtyPlus = document.getElementById("qtyPlus");
+    const addToCartBtn = document.getElementById("addToCartBtn");
+    const addedNote = document.getElementById("addedNote");
+
+    qtyMinus.addEventListener("click", function () {
+        var quantity = Number(qtyInput.value);
+        if (quantity > 1) {
+            quantity = quantity - 1;
+        }
+        qtyInput.value = quantity;
+    });
+
+
+    qtyPlus.addEventListener("click", function () {
+        var quantity = Number(qtyInput.value);
+        quantity = quantity + 1;
+        qtyInput.value = quantity;
+    });
+
+
+    addToCartBtn.addEventListener("click", function () {
+        var quantity = Number(qtyInput.value);
+        if (quantity < 1 || isNaN(quantity)) {
+            quantity = 1;
+        }
+        Cart.add(book.id, quantity);
+        renderNavbar();
+        addedNote.style.display = "inline";
+        setTimeout(function () {
+            addedNote.style.display = "none";
+        }, 1500);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', renderProduct);

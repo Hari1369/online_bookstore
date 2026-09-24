@@ -4,6 +4,15 @@
 {% block title %}Add New Book — Online Bookstore{% endblock %}
 
 {% block content %}
+
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                alert("{{ message|escapejs }}");
+            </script>
+        {% endfor %}
+    {% endif %}
+
 <main class="product-form-page">
 
     <div class="product-form-card">
@@ -14,15 +23,12 @@
 
         <form method="POST" enctype="multipart/form-data" class="book-form">
             {% csrf_token %}
-
-            <!-- Form Validation Errors -->
             {% if form.non_field_errors %}
                 <div class="form-alert error">
                     {{ form.non_field_errors }}
                 </div>
             {% endif %}
 
-            <!-- Section 1: Basic Information -->
             <div class="form-section">
                 <h3>Basic Details</h3>
                 
@@ -63,7 +69,6 @@
 
             <hr class="section-divider">
 
-            <!-- Section 2: Pricing & Inventory -->
             <div class="form-section">
                 <h3>Pricing & Inventory</h3>
 
@@ -87,36 +92,50 @@
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="field">
-                        <label for="{{ form.available_copies.id_for_label }}">Available Copies *</label>
-                        {{ form.available_copies }}
-                        {% if form.available_copies.errors %}<div class="err-text">{{ form.available_copies.errors }}</div>{% endif %}
-                    </div>
+<div class="form-row availability-row">
 
-                    <div class="field checkbox-field">
-                        <label for="{{ form.is_active.id_for_label }}">
-                            {{ form.is_active }}
-                            <span>Is Active / Available for Sale</span>
-                        </label>
-                        {% if form.is_active.errors %}<div class="err-text">{{ form.is_active.errors }}</div>{% endif %}
-                    </div>
-                </div>
+    <div class="field available-copies-field">
+        <label for="{{ form.available_copies.id_for_label }}">
+            Available Copies *
+        </label>
+
+        {{ form.available_copies }}
+
+        {% if form.available_copies.errors %}
+            <div class="err-text">
+                {{ form.available_copies.errors }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="field checkbox-field">
+        <label for="{{ form.is_active.id_for_label }}">
+            {{ form.is_active }}
+            <span>Is Active / Available for Sale</span>
+        </label>
+
+        {% if form.is_active.errors %}
+            <div class="err-text">
+                {{ form.is_active.errors }}
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
             </div>
 
             <hr class="section-divider">
 
-            <!-- Section 3: Media Uploads -->
+
             <div class="form-section">
                 <h3>Media & Attachments</h3>
-
                 <div class="form-row">
                     <div class="field">
                         <label for="{{ form.image.id_for_label }}">Cover Image</label>
                         {{ form.image }}
                         {% if form.image.errors %}<div class="err-text">{{ form.image.errors }}</div>{% endif %}
                     </div>
-
                     <div class="field">
                         <label for="{{ form.pdf.id_for_label }}">Book PDF File</label>
                         {{ form.pdf }}
@@ -130,8 +149,8 @@
                     Add Book Product
                 </button>
             </div>
-
         </form>
+
     </div>
 
 </main>

@@ -50,12 +50,10 @@ def index_page(request):
 @admin_required
 def product_page(request):
     if request.method == "POST":
-        form = ProductBookDetailsForm(
-            request.POST,
-            request.FILES
-        )
+        form = ProductBookDetailsForm(request.POST,request.FILES)
         if form.is_valid():
             form.save()
+            messages.success(request, "Book Uploaded in System!")
             return redirect("product")
     else:
         form = ProductBookDetailsForm()
@@ -78,12 +76,7 @@ def product_category_page(request):
             )
             if csv_form.is_valid():
                 csv_file = csv_form.cleaned_data["csv_file"]
-                decoded_file = (
-                    csv_file
-                    .read()
-                    .decode("utf-8")
-                    .splitlines()
-                )
+                decoded_file = (csv_file.read().decode("utf-8").splitlines())
 
                 reader = csv.DictReader(decoded_file)
                 existing_categories = []
@@ -91,18 +84,11 @@ def product_category_page(request):
                 for row in reader:
                     category = row["Book_Category"].strip()
                     if category:
-                        if ProductBookCategory.objects.filter(
-                            choice=category
-                        ).exists():
-
+                        if ProductBookCategory.objects.filter(choice=category).exists():
                             existing_categories.append(category)
-
                         else:
-                            ProductBookCategory.objects.create(
-                                choice=category
-                            )
+                            ProductBookCategory.objects.create(choice=category)
                             added_categories.append(category)
-
 
                 if len(existing_categories) > 3:
                     messages.warning(
