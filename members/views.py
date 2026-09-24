@@ -7,6 +7,7 @@ from django.views.decorators.http import require_http_methods
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from .decorators import admin_required, admin_api_required
+import json
 
 
 def signup_page(request):
@@ -73,7 +74,8 @@ def update_user(request, user_id):
             return JsonResponse({"error": "Only a superuser can edit a superuser."}, status=403)
         if is_staff != target.is_staff:
             return JsonResponse({"error": "Only a superuser can change staff status."}, status=403)
- 
+
+
     target.first_name = first_name
     target.last_name = last_name
     target.email = email

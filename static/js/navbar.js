@@ -14,7 +14,9 @@ function renderNavbar() {
     login: mount.dataset.loginUrl || '#',
     signup: mount.dataset.signupUrl || '#',
     logout: mount.dataset.logoutUrl || '',
-    users: mount.dataset.usersUrl || '#'
+    users: mount.dataset.usersUrl || '#',
+    product: mount.dataset.productUrl || '#',
+    category: mount.dataset.categoryUrl || '#'
   };
 
   // Real login state from Django (set in base.html)
@@ -35,6 +37,8 @@ function renderNavbar() {
           <a href="${urls.main}">Browse</a>
           <a href="${urls.cart}">Cart${cartCount ? `<span class="cart-count">${cartCount}</span>` : ''}</a>
           ${isLoggedIn ? `<a href="${urls.orders}">Orders</a>` : ''}
+          ${isAdmin ? `<a href="${urls.product}">Add Book</a>` : ''}
+          ${isAdmin ? `<a href="${urls.category}">Categories</a>` : ''}
           ${isAdmin ? `<a href="${urls.users}">Users</a>` : ''}
           ${isLoggedIn
             ? `<a href="${urls.logout}" id="navLogout">Log out (${escapeHTML(displayName)})</a>`
