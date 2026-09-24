@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="{{ csrf_token }}">
 <title>{% block title %}Online Bookstore{% endblock %}</title>
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 {% block extra_head %}{% endblock %}
@@ -16,6 +17,7 @@
      data-login-url="{% url 'login' %}"
      data-signup-url="{% url 'signup' %}"
      data-logout-url="{% url 'logout' %}"
+     data-cart-count="{{ cart_count|default:0 }}"
      data-users-url="{% url 'show_users' %}"
      data-product-url="{% url 'product' %}"
      data-category-url="{% url 'product_category' %}"
@@ -28,9 +30,9 @@
 
 <div id="modalRoot"></div>
 
-<script src="{% static 'js/store.js' %}?v=3"></script>
-<script src="{% static 'js/data.js' %}?v=3"></script>
-<script src="{% static 'js/navbar.js' %}?v=3"></script>
+<script src="{% static 'js/store.js' %}?v=5"></script>
+<script src="{% static 'js/data.js' %}?v=5"></script>
+<script src="{% static 'js/navbar.js' %}?v=5"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

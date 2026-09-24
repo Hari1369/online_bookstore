@@ -2,13 +2,131 @@
 {% load static %}
 {% block title %}Your cart — Online Bookstore{% endblock %}
 
+{% block extra_head %}
+<style>
+  .cart-table .qty-row { margin: 0; }
+  .cart-note { font-size: .8rem; color: var(--error, #b3442f); }
+  #cartAlert { margin-bottom: 16px; }
+  .cart-summary .btn { margin-top: 16px; }
+</style>
+{% endblock %}
+
 {% block content %}
 <main class="wrap section">
   <h1>Your cart</h1>
-  <div id="cartRoot"></div>
+  <div class="form-alert error" id="cartAlert" role="alert"></div>
+
+  {% if rows %}
+  <table class="cart-table" id="cartTable">
+    <thead>
+      <tr><th>Book</th><th>Price</th><th>Quantity</th><th>Subtotal</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr data-update-url="{% url 'cart_update' r.item.id %}"
+          data-remove-url="{% url 'cart_remove' r.item.id %}"
+          data-qty="{{ r.item.quantity }}">
+        <td>
+          <div class="cart-item-title">{{ r.item.product.title }}</div>
+          <div class="cart-item-author">{{ r.item.product.author }}</div>
+          {% if not r.item.product.is_active %}
+            <div class="cart-note">No longer available — please remove.</div>
+          {% elif r.item.product.available_copies < r.item.quantity %}
+            <div class="cart-note">Only {{ r.item.product.available_copies }} left in stock.</div>
+          {% endif %}
+        </td>
+        <td>₹{{ r.item.product.price|floatformat:2 }}</td>
+        <td>
+          <div class="qty-row">
+            <button type="button" class="qty-minus" aria-label="Decrease quantity">−</button>
+            <input type="number" class="qty-input" min="1" value="{{ r.item.quantity }}" aria-label="Quantity" style="width:56px;">
+            <button type="button" class="qty-plus" aria-label="Increase quantity">+</button>
+          </div>
+        </td>
+        <td class="c-subtotal">₹{{ r.subtotal|floatformat:2 }}</td>
+        <td><button type="button" class="btn btn-ghost btn-sm remove-btn" style="color:var(--error);">Remove</button></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="cart-summary">
+    <div class="line"><span>Items</span><span id="cartItems">{{ items_count }}</span></div>
+    <div class="line total"><span>Total</span><span id="cartTotal">₹{{ total|floatformat:2 }}</span></div>
+    <button type="button" class="btn btn-primary btn-block" id="placeOrderBtn">Place order</button>
+  </div>
+  {% else %}
+  <p class="empty-state">Your cart is empty. <a href="{% url 'main' %}">Browse the catalogue</a>.</p>
+  {% endif %}
 </main>
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'js/cart-page.js' %}"></script>
+<script>
+(function () {
+  const table = document.getElementById('cartTable');
+  if (!table) return;                                   // empty cart: nothing to wire up
+
+  const csrf     = document.querySelector('meta[name="csrf-token"]').content;
+  const alertBox = document.getElementById('cartAlert');
+  const loginUrl = document.getElementById('navbar').dataset.loginUrl;
+
+  function showError(msg) { alertBox.textContent = msg; alertBox.classList.add('show'); }
+  function clearError()   { alertBox.classList.remove('show'); }
+
+  async function api(url, method, body) {
+    const res = await fetch(url, {
+      method,
+      headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) { location.href = loginUrl; }
+    return { ok: res.ok, data };
+  }
+
+  function updateSummary(data) {
+    document.getElementById('cartTotal').textContent = '₹' + data.total;
+    document.getElementById('cartItems').textContent = data.cart_count;
+    if (window.updateCartCount) window.updateCartCount(data.cart_count);   // navbar badge
+  }
+
+  async function setQty(row, qty) {
+    clearError();
+    const input = row.querySelector('.qty-input');
+    if (!Number.isInteger(qty) || qty < 1) { input.value = row.dataset.qty; return; }
+    const { ok, data } = await api(row.dataset.updateUrl, 'PUT', { quantity: qty });
+    if (!ok) { showError(data.error || 'Could not update the quantity.'); input.value = row.dataset.qty; return; }
+    row.dataset.qty = data.item.quantity;
+    input.value = data.item.quantity;
+    row.querySelector('.c-subtotal').textContent = '₹' + data.item.subtotal;
+    updateSummary(data);
+  }
+
+  table.querySelectorAll('tbody tr').forEach(row => {
+    const input = row.querySelector('.qty-input');
+    row.querySelector('.qty-minus').addEventListener('click', () => setQty(row, Number(row.dataset.qty) - 1));
+    row.querySelector('.qty-plus').addEventListener('click',  () => setQty(row, Number(row.dataset.qty) + 1));
+    input.addEventListener('change', () => setQty(row, parseInt(input.value, 10)));
+
+    row.querySelector('.remove-btn').addEventListener('click', async () => {
+      clearError();
+      const { ok, data } = await api(row.dataset.removeUrl, 'DELETE');
+      if (!ok) { showError(data.error || 'Could not remove the item.'); return; }
+      row.remove();
+      if (!table.querySelector('tbody tr')) { location.reload(); return; }   // show the empty state
+      updateSummary(data);
+    });
+  });
+
+  document.getElementById('placeOrderBtn').addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    clearError();
+    btn.disabled = true;
+    const { ok, data } = await api("{% url 'order_place' %}", 'POST');
+    if (!ok) { showError(data.error || 'Could not place the order.'); btn.disabled = false; return; }
+    location.href = data.redirect;
+  });
+})();
+</script>
 {% endblock %}

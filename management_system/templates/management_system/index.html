@@ -36,6 +36,13 @@
     stroke-linejoin: round;
   }
   .wishlist-btn:hover .icon { fill: currentColor; }
+  .book-actions button:disabled { opacity: .5; cursor: not-allowed; }
+  #shopToast {
+    position: fixed; bottom: 20px; right: 20px; max-width: 320px; z-index: 100;
+    background: #1d2b26; color: #fff; padding: 10px 16px; border-radius: 4px;
+    display: none; font-size: .9rem;
+  }
+  #shopToast.error { background: #b3442f; }
 </style>
 {% endblock %}
 
@@ -77,14 +84,16 @@
 
             <!-- Action Buttons -->
             <div class="book-actions">
-              <button type="button" class="add-cart-btn">
+              <button type="button" class="add-cart-btn"
+                      data-add-url="{% url 'cart_add' book.id %}"
+                      {% if book.available_copies == 0 %}disabled{% endif %}>
                 <!-- Shopping cart icon -->
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
                   <circle cx="9" cy="21" r="1"></circle>
                   <circle cx="20" cy="21" r="1"></circle>
                   <path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"></path>
                 </svg>
-                Add to Cart
+                <span class="btn-label">{% if book.available_copies == 0 %}Out of stock{% else %}Add to Cart{% endif %}</span>
               </button>
 
               <button type="button" class="wishlist-btn">
@@ -109,4 +118,50 @@
 
   </div>
 </main>
+{% endblock %}
+
+{% block scripts %}
+<div id="shopToast" role="status"></div>
+<script>
+(function () {
+  const csrf     = document.querySelector('meta[name="csrf-token"]').content;
+  const loginUrl = document.getElementById('navbar').dataset.loginUrl;
+  const toast    = document.getElementById('shopToast');
+  let toastTimer;
+
+  function showToast(msg, isError) {
+    toast.textContent = msg;
+    toast.classList.toggle('error', !!isError);
+    toast.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.style.display = 'none', 2500);
+  }
+
+  document.querySelectorAll('.add-cart-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const label = btn.querySelector('.btn-label');
+      btn.disabled = true;
+      try {
+        const res = await fetch(btn.dataset.addUrl, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quantity: 1 })
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (res.status === 401) { location.href = loginUrl; return; }   // must log in first
+        if (!res.ok) { showToast(data.error || 'Could not add to cart.', true); btn.disabled = false; return; }
+
+        if (window.updateCartCount) window.updateCartCount(data.cart_count);   // navbar badge
+        showToast(data.message);
+        label.textContent = 'Added ✓';
+        setTimeout(() => { label.textContent = 'Add to Cart'; btn.disabled = false; }, 900);
+      } catch (err) {
+        showToast('Network error. Please try again.', true);
+        btn.disabled = false;
+      }
+    });
+  });
+})();
+</script>
 {% endblock %}

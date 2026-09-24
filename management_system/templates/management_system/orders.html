@@ -2,14 +2,111 @@
 {% load static %}
 {% block title %}Order history — Online Bookstore{% endblock %}
 
+{% block extra_head %}
+<style>
+  #ordersAlert { margin-bottom: 16px; }
+  .order-meta { font-size: .82rem; color: var(--ink-soft); }
+  .order-card select:disabled { opacity: .6; cursor: not-allowed; }
+</style>
+{% endblock %}
+
 {% block content %}
 <main class="wrap section">
-  <h1 id="ordersHeading">Your orders</h1>
-  <div id="orderNote"></div>
-  <div id="ordersRoot"></div>
+  <h1>{% if is_admin %}All orders{% else %}Your orders{% endif %}</h1>
+
+  {% for message in messages %}
+    <div class="form-alert show">{{ message }}</div>
+  {% endfor %}
+  <div class="form-alert error" id="ordersAlert" role="alert"></div>
+
+  <div id="ordersRoot">
+    {% for order in orders %}
+    <div class="order-card"
+         data-update-url="{% url 'order_update' order.id %}"
+         data-delete-url="{% url 'order_delete' order.id %}"
+         data-status="{{ order.status }}">
+      <div class="order-head">
+        <div>
+          <div class="order-id">{{ order.order_number }}</div>
+          <div class="order-meta">
+            {{ order.created_at|date:"d M Y, H:i" }}
+            {% if is_admin %} · {{ order.user.get_full_name|default:order.user.username }} ({{ order.user.email }}){% endif %}
+          </div>
+        </div>
+        <span class="status-pill status-{{ order.status|lower }}">{{ order.get_status_display }}</span>
+      </div>
+
+      <div class="order-items">
+        {% for line in order.orderitem_set.all %}{{ line.quantity }}× {{ line.product.title }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      </div>
+
+      <div class="order-foot">
+        <strong>₹{{ order.total_amount|floatformat:2 }}</strong>
+        {% if is_admin %}
+        <div class="admin-controls">
+          <select class="status-select" aria-label="Order status" {% if order.status == 'CANCELLED' %}disabled{% endif %}>
+            {% for value, label in statuses %}
+              <option value="{{ value }}" {% if value == order.status %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <button type="button" class="btn btn-danger btn-sm delete-order-btn">Delete</button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <p class="empty-state">No orders yet. <a href="{% url 'main' %}">Start browsing</a>.</p>
+    {% endfor %}
+  </div>
 </main>
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'js/orders.js' %}"></script>
+{% if is_admin %}
+<script>
+(function () {
+  const csrf     = document.querySelector('meta[name="csrf-token"]').content;
+  const alertBox = document.getElementById('ordersAlert');
+
+  function showError(msg) { alertBox.textContent = msg; alertBox.classList.add('show'); }
+  function clearError()   { alertBox.classList.remove('show'); }
+
+  async function api(url, method, body) {
+    const res = await fetch(url, {
+      method,
+      headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    return { ok: res.ok, data: await res.json().catch(() => ({})) };
+  }
+
+  document.querySelectorAll('.order-card').forEach(card => {
+    const select = card.querySelector('.status-select');
+    const pill   = card.querySelector('.status-pill');
+
+    // UPDATE status
+    select.addEventListener('change', async () => {
+      clearError();
+      const { ok, data } = await api(card.dataset.updateUrl, 'PUT', { status: select.value });
+      if (!ok) { showError(data.error || 'Could not update the status.'); select.value = card.dataset.status; return; }
+      card.dataset.status = data.order.status;
+      pill.className = 'status-pill status-' + data.order.status.toLowerCase();
+      pill.textContent = data.order.status_display;
+      if (data.order.status === 'CANCELLED') select.disabled = true;    // cancelled is final
+    });
+
+    // DELETE order
+    card.querySelector('.delete-order-btn').addEventListener('click', async () => {
+      const id = card.querySelector('.order-id').textContent.trim();
+      if (!confirm('Delete order ' + id + ' permanently?')) return;
+      clearError();
+      const { ok, data } = await api(card.dataset.deleteUrl, 'DELETE');
+      if (!ok) { showError(data.error || 'Could not delete the order.'); return; }
+      card.remove();
+      if (!document.querySelector('.order-card')) location.reload();   // show the empty state
+    });
+  });
+})();
+</script>
+{% endif %}
 {% endblock %}
