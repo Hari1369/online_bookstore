@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import ProductBookCategory
+from .models import ProductBookCategory, ProductBookDetails, CartManagement, CartItem, Order, OrderItem
 from .forms import (ProductBookCategoryForm, BookCategoryCSVForm, ProductBookDetailsForm) 
 from django.contrib import messages
 from django.http import JsonResponse
@@ -8,14 +8,21 @@ import json
 
 
 
+def index_page(request):
+    # Query all active books and prefetch foreign key relations for optimal database calls
+    books = ProductBookDetails.objects.filter(is_active=True).select_related('category')
+    categories = ProductBookCategory.objects.all()
+
+    context = {
+        'books': books,
+        'categories': categories,
+    }
+    return render(request, "management_system/index.html", context)
 
 
-# Create your views here.
+
 def cart_page(request):
     return render(request, "management_system/cart.html")
-
-def index_page(request):
-    return render(request, "management_system/index.html")
 
 def orders_page(request):
     return render(request, "management_system/orders.html")

@@ -1,40 +1,57 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Online Bookstore — books for fiction, non-fiction & academic readers{% endblock %}
+
+{% block title %}Dashboard — Book Catalogue{% endblock %}
 
 {% block content %}
-<header class="hero">
-  <div class="wrap">
-    <h1>Read in the margins of everything else.</h1>
-    <p class="lede">A small catalogue of fiction, non-fiction and academic titles, picked for readers who annotate. Browse by category or search by title and author.</p>
-    <div class="chip-row" id="categoryChips">
-      <button class="chip active" data-cat="all">All books</button>
-      <button class="chip" data-cat="fiction">Fiction</button>
-      <button class="chip" data-cat="non-fiction">Non-fiction</button>
-      <button class="chip" data-cat="academic">Academic</button>
-    </div>
-  </div>
-</header>
-
 <main class="section">
   <div class="wrap">
-    <div id="adminBar"></div>
-    <div class="section-head">
-      <h2 id="resultsHeading">All books</h2>
-      <div style="display:flex; gap:10px; align-items:center;">
-        <label for="priceSort" class="visually-hidden">Sort by price</label>
-        <select id="priceSort" style="padding:8px 10px; border-radius:3px; border:1px solid var(--line); font-family:var(--sans);">
-          <option value="">Sort: featured</option>
-          <option value="asc">Price: low to high</option>
-          <option value="desc">Price: high to low</option>
-        </select>
-      </div>
+    <h2>All Books in System</h2>
+
+    <div class="book-grid">
+      {% for book in books %}
+        <article class="book-card">
+          
+          <!-- Image Display from Media Folder -->
+          <div class="cover-container">
+            {% if book.image %}
+              <img src="{{ book.image.url }}" alt="{{ book.title }}" class="book-cover-img">
+            {% else %}
+              <div class="cover-fallback">
+                <span>No Image Uploaded</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Book Details -->
+          <div class="meta">
+            <span class="cat">{{ book.category.choice }}</span>
+            <h3 class="title">{{ book.title }}</h3>
+            <p class="author">by {{ book.author }}</p>
+            <p class="price">Ruppe : {{ book.price }}</p>
+            
+            <p class="copies-info">
+              Available: <strong>{{ book.available_copies }}</strong> / {{ book.total_copies }}
+            </p>
+          </div>
+
+          <!-- File Attachment Link -->
+          <div class="row-actions">
+            {% if book.pdf %}
+              <a href="{{ book.pdf.url }}" target="_blank" class="btn btn-outline btn-sm btn-block">
+                📄 View PDF Document
+              </a>
+            {% else %}
+              <button class="btn btn-outline btn-sm btn-block" disabled>No PDF Attached</button>
+            {% endif %}
+          </div>
+
+        </article>
+      {% empty %}
+        <p class="empty-state">No books available in the system database.</p>
+      {% endfor %}
     </div>
-    <div class="book-grid" id="bookGrid"></div>
+
   </div>
 </main>
-{% endblock %}
-
-{% block scripts %}
-<script src="{% static 'js/main.js' %}"></script>
 {% endblock %}
