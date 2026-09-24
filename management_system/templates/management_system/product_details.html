@@ -6,8 +6,6 @@
 {% block content %}
 
 <div class="book-table-container">
-    <h2>Manage Books</h2>
-
     <div class="book-search">
         <form method="GET" action="">
             <input
@@ -25,7 +23,6 @@
     </div>
 
     <table class="book-table">
-
         <thead>
             <tr>
                 <th>Sr No.</th>
@@ -38,6 +35,7 @@
                 <th>Category</th>
                 <th>Total Copies</th>
                 <th>Available Copies</th>
+                <th>Active / Not Active</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -55,6 +53,13 @@
                 <td data-col="category">{{ product.category }}</td>
                 <td data-col="total">{{ product.total_copies }}</td>
                 <td data-col="available">{{ product.available_copies }}</td>
+                <td data-col="is_active">
+                    {% if product.is_active %}
+                        <span class="book-active">Active</span>
+                    {% else %}
+                        <span class="book-inactive">Not Active</span>
+                    {% endif %}
+                </td>
                 <td>
                     <div class="action-cell">
                         <a
@@ -72,7 +77,13 @@
                             data-available="{{ product.available_copies }}"
                             data-active="{{ product.is_active|yesno:'true,false' }}"
                         >Update</a>
-                        <a href="#" class="book-delete-btn">Delete</a>
+                        
+                        <a 
+                            href="#" 
+                            class="book-delete-btn" 
+                            data-delete-url="{% url 'product_delete' product.id %}"
+                            data-title="{{ product.title }}"
+                        >Delete</a>
                     </div>
                 </td>
             </tr>
@@ -86,88 +97,106 @@
 </div>
 
 
-<!-- =====================================================
-     UPDATE MODAL (one modal, reused for every book)
-     ===================================================== -->
-<div class="modal-overlay book-modal-overlay" id="bookEditModal">
-    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="bookEditTitle">
+    <!-- =====================================================
+    UPDATE MODAL (one modal, reused for every book)
+    ===================================================== -->
+    <div class="modal-overlay book-modal-overlay" id="bookEditModal">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="bookEditTitle">
 
-        <button type="button" class="modal-close" id="bookEditClose" aria-label="Close">&times;</button>
+            <button type="button" class="modal-close" id="bookEditClose" aria-label="Close">&times;</button>
 
-        <h2 id="bookEditTitle">Update Book</h2>
+            <h2 id="bookEditTitle">Update Book</h2>
 
-        <div class="form-alert error" id="bookEditError"></div>
+            <div class="form-alert error" id="bookEditError"></div>
 
-        <form id="bookEditForm" class="book-form" novalidate>
-            {% csrf_token %}
+            <form id="bookEditForm" class="book-form" novalidate>
+                {% csrf_token %}
 
-            <div class="form-row">
+                <div class="form-row">
+                    <div class="field">
+                        <label for="editIsbn">ISBN</label>
+                        <input type="text" id="editIsbn" name="isbn" class="book-input" required>
+                    </div>
+                    <div class="field">
+                        <label for="editTitle">Title</label>
+                        <input type="text" id="editTitle" name="title" class="book-input" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="field">
+                        <label for="editAuthor">Author</label>
+                        <input type="text" id="editAuthor" name="author" class="book-input" required>
+                    </div>
+                    <div class="field">
+                        <label for="editCategory">Category</label>
+                        <select id="editCategory" name="category" required>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.choice }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
                 <div class="field">
-                    <label for="editIsbn">ISBN</label>
-                    <input type="text" id="editIsbn" name="isbn" class="book-input" required>
+                    <label for="editDescription">Description</label>
+                    <textarea id="editDescription" name="description" rows="4" required></textarea>
                 </div>
-                <div class="field">
-                    <label for="editTitle">Title</label>
-                    <input type="text" id="editTitle" name="title" class="book-input" required>
-                </div>
-            </div>
 
-            <div class="form-row">
-                <div class="field">
-                    <label for="editAuthor">Author</label>
-                    <input type="text" id="editAuthor" name="author" class="book-input" required>
+                <div class="form-row grid-3">
+                    <div class="field">
+                        <label for="editPrice">Price</label>
+                        <input type="number" id="editPrice" name="price" class="book-input" step="0.01" min="0" required>
+                    </div>
+                    <div class="field">
+                        <label for="editYear">Publication Year</label>
+                        <input type="number" id="editYear" name="publication_year" class="book-input" required>
+                    </div>
+                    <div class="field">
+                        <label for="editTotal">Total Copies</label>
+                        <input type="number" id="editTotal" name="total_copies" class="book-input" min="0" required>
+                    </div>
                 </div>
-                <div class="field">
-                    <label for="editCategory">Category</label>
-                    <select id="editCategory" name="category" required>
-                        {% for category in categories %}
-                            <option value="{{ category.id }}">{{ category.choice }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
 
-            <div class="field">
-                <label for="editDescription">Description</label>
-                <textarea id="editDescription" name="description" rows="4" required></textarea>
-            </div>
+                <div class="availability-row">
+                    <div class="field available-copies-field">
+                        <label for="editAvailable">Available Copies</label>
+                        <input type="number" id="editAvailable" name="available_copies" class="book-input" min="0" required>
+                    </div>
+                    <div class="field checkbox-field">
+                        <label for="editActive">
+                            <input type="checkbox" id="editActive" name="is_active" class="book-checkbox">
+                            Active / available for sale
+                        </label>
+                    </div>
+                </div>
 
-            <div class="form-row grid-3">
-                <div class="field">
-                    <label for="editPrice">Price</label>
-                    <input type="number" id="editPrice" name="price" class="book-input" step="0.01" min="0" required>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="bookEditCancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="bookEditSave">Save changes</button>
                 </div>
-                <div class="field">
-                    <label for="editYear">Publication Year</label>
-                    <input type="number" id="editYear" name="publication_year" class="book-input" required>
-                </div>
-                <div class="field">
-                    <label for="editTotal">Total Copies</label>
-                    <input type="number" id="editTotal" name="total_copies" class="book-input" min="0" required>
-                </div>
-            </div>
+            </form>
+        </div>
+    </div>
 
-            <div class="availability-row">
-                <div class="field available-copies-field">
-                    <label for="editAvailable">Available Copies</label>
-                    <input type="number" id="editAvailable" name="available_copies" class="book-input" min="0" required>
-                </div>
-                <div class="field checkbox-field">
-                    <label for="editActive">
-                        <input type="checkbox" id="editActive" name="is_active" class="book-checkbox">
-                        Active / available for sale
-                    </label>
-                </div>
-            </div>
+
+    <!-- =====================================================
+    DELETE MODAL
+    ===================================================== -->
+    <div class="modal-overlay book-modal-overlay" id="bookDeleteModal">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="bookDeleteTitle">
+            <button type="button" class="modal-close" id="bookDeleteClose" aria-label="Close">&times;</button>
+            <h2 id="bookDeleteTitle">Confirm Soft Delete</h2>
+            <p style="margin: 16px 0; color: #4a5568;">Are you sure you want to deactivate <strong id="deleteBookTitle"></strong></p>
 
             <div class="modal-actions">
-                <button type="button" class="btn btn-secondary" id="bookEditCancel">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="bookEditSave">Save changes</button>
+                <button type="button" class="btn btn-secondary" id="bookDeleteCancel">Cancel</button>
+                <button type="button" class="btn btn-danger" id="bookDeleteConfirm" style="background-color: #b3442f; color: #fff;">Deactivate Book</button>
             </div>
-        </form>
-
+        </div>
     </div>
-</div>
+
+
 
 <div id="bookToast"></div>
 
@@ -175,22 +204,27 @@
 
 {% block scripts %}
 <script>
-    (function () {
+(function () {
     "use strict";
- 
+
     const overlay = document.getElementById("bookEditModal");
     const form = document.getElementById("bookEditForm");
-    if (!overlay || !form) return;
- 
     const tbody = document.getElementById("bookTableBody");
     const errorBox = document.getElementById("bookEditError");
     const saveBtn = document.getElementById("bookEditSave");
     const toast = document.getElementById("bookToast");
- 
+
+    // Delete Modal Elements
+    const deleteOverlay = document.getElementById("bookDeleteModal");
+    const deleteTitleSpan = document.getElementById("deleteBookTitle");
+    const deleteConfirmBtn = document.getElementById("bookDeleteConfirm");
+    const deleteCloseBtn = document.getElementById("bookDeleteClose");
+    const deleteCancelBtn = document.getElementById("bookDeleteCancel");
+
     let activeButton = null;
+    let activeDeleteBtn = null;
     let toastTimer = null;
- 
-    // form field name -> data-* key on the Update button
+
     const FIELD_MAP = {
         isbn: "isbn",
         title: "title",
@@ -202,9 +236,8 @@
         total_copies: "total",
         available_copies: "available",
     };
- 
-    /* ---------- helpers ---------- */
- 
+
+    /* ---------- Helpers ---------- */
     function showToast(message, isError) {
         if (!toast) return;
         toast.textContent = message;
@@ -215,17 +248,21 @@
             toast.style.display = "none";
         }, 3000);
     }
- 
+
     function clearError() {
-        errorBox.textContent = "";
-        errorBox.classList.remove("show");
+        if (errorBox) {
+            errorBox.textContent = "";
+            errorBox.classList.remove("show");
+        }
     }
- 
+
     function showError(message) {
-        errorBox.textContent = message;
-        errorBox.classList.add("show");
+        if (errorBox) {
+            errorBox.textContent = message;
+            errorBox.classList.add("show");
+        }
     }
- 
+
     function showErrors(errors) {
         const lines = [];
         Object.keys(errors).forEach(function (field) {
@@ -236,66 +273,113 @@
         });
         showError(lines.join("\n"));
     }
- 
-    /* ---------- open / close ---------- */
- 
-    function openModal(btn) {
+
+    /* ---------- Edit Modal Logic ---------- */
+
+    function openEditModal(btn) {
         activeButton = btn;
         clearError();
- 
+
         Object.keys(FIELD_MAP).forEach(function (name) {
             const value = btn.dataset[FIELD_MAP[name]];
-            form.elements[name].value = value !== undefined ? value : "";
+            if (form.elements[name]) {
+                form.elements[name].value = value !== undefined ? value : "";
+            }
         });
-        form.elements["is_active"].checked = btn.dataset.active === "true";
- 
+        if (form.elements["is_active"]) {
+            form.elements["is_active"].checked = btn.dataset.active === "true";
+        }
+
         overlay.style.display = "flex";
-        form.elements["isbn"].focus();
+        if (form.elements["isbn"]) form.elements["isbn"].focus();
     }
- 
-    function closeModal() {
+
+    function closeEditModal() {
         overlay.style.display = "none";
         activeButton = null;
     }
- 
-    tbody.addEventListener("click", function (e) {
-        const btn = e.target.closest(".book-update-btn");
-        if (!btn) return;
-        e.preventDefault();
-        openModal(btn);
-    });
- 
-    document.getElementById("bookEditCancel").addEventListener("click", closeModal);
-    document.getElementById("bookEditClose").addEventListener("click", closeModal);
- 
-    overlay.addEventListener("click", function (e) {
-        if (e.target === overlay) closeModal();
-    });
- 
+
+    /* ---------- Delete Modal Logic ---------- */
+
+    function openDeleteModal(btn) {
+        activeDeleteBtn = btn;
+        if (deleteTitleSpan) {
+            deleteTitleSpan.textContent = btn.dataset.title;
+        }
+        deleteOverlay.style.display = "flex";
+    }
+
+    function closeDeleteModal() {
+        deleteOverlay.style.display = "none";
+        activeDeleteBtn = null;
+    }
+
+    /* ---------- Unified Table Action Delegation ---------- */
+
+    if (tbody) {
+        tbody.addEventListener("click", function (e) {
+            const updateBtn = e.target.closest(".book-update-btn");
+            const deleteBtn = e.target.closest(".book-delete-btn");
+
+            if (updateBtn) {
+                e.preventDefault();
+                openEditModal(updateBtn);
+            } else if (deleteBtn) {
+                e.preventDefault();
+                openDeleteModal(deleteBtn);
+            }
+        });
+    }
+
+    /* ---------- Close Event Listeners ---------- */
+
+    const editCancelBtn = document.getElementById("bookEditCancel");
+    const editCloseBtn = document.getElementById("bookEditClose");
+
+    if (editCancelBtn) editCancelBtn.addEventListener("click", closeEditModal);
+    if (editCloseBtn) editCloseBtn.addEventListener("click", closeEditModal);
+
+    if (deleteCloseBtn) deleteCloseBtn.addEventListener("click", closeDeleteModal);
+    if (deleteCancelBtn) deleteCancelBtn.addEventListener("click", closeDeleteModal);
+
+    if (overlay) {
+        overlay.addEventListener("click", function (e) {
+            if (e.target === overlay) closeEditModal();
+        });
+    }
+
+    if (deleteOverlay) {
+        deleteOverlay.addEventListener("click", function (e) {
+            if (e.target === deleteOverlay) closeDeleteModal();
+        });
+    }
+
     document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape" && overlay.style.display === "flex") closeModal();
+        if (e.key === "Escape") {
+            if (overlay && overlay.style.display === "flex") closeEditModal();
+            if (deleteOverlay && deleteOverlay.style.display === "flex") closeDeleteModal();
+        }
     });
- 
-    /* ---------- update the table row after saving ---------- */
- 
+
+    /* ---------- Table Row Sync ---------- */
+
     function applyUpdate(btn, book) {
         const row = btn.closest("tr");
- 
+
         function setCell(col, text) {
             const cell = row.querySelector('[data-col="' + col + '"]');
             if (cell) cell.textContent = text;
         }
- 
+
         setCell("isbn", book.isbn);
         setCell("title", book.title);
         setCell("author", book.author);
-        setCell("price", "\u20B9" + book.price);
+        setCell("price", "₹" + book.price);
         setCell("year", book.publication_year);
         setCell("category", book.category_name);
         setCell("total", book.total_copies);
         setCell("available", book.available_copies);
- 
-        // keep the button's data in sync so re-opening shows the new values
+
         btn.dataset.isbn = book.isbn;
         btn.dataset.title = book.title;
         btn.dataset.author = book.author;
@@ -307,49 +391,96 @@
         btn.dataset.available = book.available_copies;
         btn.dataset.active = book.is_active ? "true" : "false";
     }
- 
-    /* ---------- submit ---------- */
- 
-    form.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        if (!activeButton) return;
- 
-        clearError();
-        saveBtn.disabled = true;
-        saveBtn.textContent = "Saving...";
- 
-        try {
-            const response = await fetch(activeButton.dataset.url, {
-                method: "POST",
-                body: new FormData(form),
-                headers: { "X-Requested-With": "XMLHttpRequest" },
-                credentials: "same-origin",
-            });
- 
-            let data = null;
+
+    /* ---------- Submit Form (Edit) ---------- */
+
+    if (form) {
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            if (!activeButton) return;
+
+            clearError();
+            saveBtn.disabled = true;
+            saveBtn.textContent = "Saving...";
+
             try {
-                data = await response.json();
+                const response = await fetch(activeButton.dataset.url, {
+                    method: "POST",
+                    body: new FormData(form),
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    credentials: "same-origin",
+                });
+
+                let data = null;
+                try {
+                    data = await response.json();
+                } catch (err) {
+                    data = null;
+                }
+
+                if (response.ok && data && data.success) {
+                    applyUpdate(activeButton, data.book);
+                    closeEditModal();
+                    showToast(data.message);
+                } else if (data && data.errors) {
+                    showErrors(data.errors);
+                } else {
+                    showError("Could not save changes. Please try again.");
+                }
             } catch (err) {
-                data = null;
+                showError("Network error. Please check your connection and try again.");
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = "Save changes";
             }
- 
-            if (response.ok && data && data.success) {
-                applyUpdate(activeButton, data.book);
-                closeModal();
-                showToast(data.message);
-            } else if (data && data.errors) {
-                showErrors(data.errors);
-            } else {
-                showError("Could not save changes. Please try again.");
+        });
+    }
+
+    /* ---------- Confirm Delete (Soft Delete AJAX) ---------- */
+
+    if (deleteConfirmBtn) {
+        deleteConfirmBtn.addEventListener("click", async function () {
+            if (!activeDeleteBtn) return;
+
+            const deleteUrl = activeDeleteBtn.dataset.deleteUrl;
+            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (!csrfInput) {
+                showToast("CSRF token missing.", true);
+                return;
             }
-        } catch (err) {
-            showError("Network error. Please check your connection and try again.");
-        } finally {
-            saveBtn.disabled = false;
-            saveBtn.textContent = "Save changes";
-        }
-    });
+
+            deleteConfirmBtn.disabled = true;
+            deleteConfirmBtn.textContent = "Deactivating...";
+
+            try {
+                const response = await fetch(deleteUrl, {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": csrfInput.value
+                    },
+                    credentials: "same-origin"
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    const row = activeDeleteBtn.closest("tr");
+                    if (row) row.remove();
+
+                    closeDeleteModal();
+                    showToast(data.message || "Book deactivated successfully.");
+                } else {
+                    showToast(data.message || "Could not deactivate book.", true);
+                }
+            } catch (err) {
+                showToast("Network error. Please try again.", true);
+            } finally {
+                deleteConfirmBtn.disabled = false;
+                deleteConfirmBtn.textContent = "Deactivate Book";
+            }
+        });
+    }
 })();
- 
 </script>
 {% endblock %}

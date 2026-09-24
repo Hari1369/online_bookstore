@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 import uuid
 from collections import defaultdict
 from decimal import Decimal
-
+from django.db.models import Q
 from django.db import transaction
 from django.db.models import F, Sum
 from django.http.request import RawPostDataException
@@ -22,7 +22,7 @@ from members.decorators import admin_api_required, login_required_api, login_req
 from .models import CartItem, CartManagement, Order, OrderItem, ProductBookDetails, ProductBookCategory
 from .forms import (ProductBookCategoryForm, BookCategoryCSVForm, ProductBookDetailsForm, ProductBookUpdateForm) 
 from django.views.decorators.http import require_http_methods
-
+from django.shortcuts import render, get_object_or_404
 
 def _json_body(request):
     try:
@@ -32,13 +32,82 @@ def _json_body(request):
     return data if isinstance(data, dict) else None
 
 
+
 def index_page(request):
-    books = ProductBookDetails.objects.filter(is_active=True).select_related('category')
+    search_query = request.GET.get('q', '').strip()
+    category_id = request.GET.get('category', '').strip()
+    min_price = request.GET.get('min_price', '').strip()
+    max_price = request.GET.get('max_price', '').strip()
+
+    # Start with active books
+    books = ProductBookDetails.objects.filter(
+        is_active=True
+    ).select_related('category')
+
+    # Search filter
+    if search_query:
+        books = books.filter(
+            Q(title__icontains=search_query) |
+            Q(author__icontains=search_query)
+        )
+
+    # Category filter
+    if category_id:
+        books = books.filter(category_id=category_id)
+
+    # Minimum price filter
+    if min_price:
+        try:
+            books = books.filter(price__gte=min_price)
+        except (ValueError, TypeError):
+            min_price = ''
+
+    # Maximum price filter
+    if max_price:
+        try:
+            books = books.filter(price__lte=max_price)
+        except (ValueError, TypeError):
+            max_price = ''
+
     categories = ProductBookCategory.objects.all()
 
-    context = {'books': books, 'categories': categories}
-    return render(request, "management_system/index.html", context)
+    context = {
+        'books': books,
+        'categories': categories,
+        'search_query': search_query,
+        'selected_category': category_id,
+        'min_price': min_price,
+        'max_price': max_price,
+    }
 
+    return render(
+        request,
+        "management_system/index.html",
+        context
+    )
+
+# def index_page(request):
+#     search_query = request.GET.get('q', '').strip()
+    
+#     # Start with active books and prefetch category in a single query
+#     books = ProductBookDetails.objects.filter(is_active=True).select_related('category')
+    
+#     # Filter the existing QuerySet if a search parameter is present
+#     if search_query:
+#         books = books.filter(
+#             Q(title__icontains=search_query) | 
+#             Q(author__icontains=search_query)
+#         )
+
+#     categories = ProductBookCategory.objects.all()
+
+#     context = {
+#         'books': books, 
+#         'categories': categories,
+#         'search_query': search_query,  # Included inside the context dictionary
+#     }
+    
+#     return render(request, "management_system/index.html", context)
 
 
 # def cart_page(request):
@@ -228,6 +297,19 @@ def product_update(request, product_id):
             "available_copies": book.available_copies,
             "is_active": book.is_active,
         }
+    })
+
+@admin_required
+@require_POST
+def product_delete(request, product_id):
+    book = get_object_or_404(ProductBookDetails, id=product_id)
+    
+    book.is_active = False
+    book.save(update_fields=['is_active'])
+
+    return JsonResponse({
+        "success": True,
+        "message": f"'{book.title}' has been successfully deactivated."
     })
 
 @require_http_methods(["PUT"])

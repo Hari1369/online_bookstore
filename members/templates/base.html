@@ -21,6 +21,7 @@
      data-users-url="{% url 'show_users' %}"
      data-product-url="{% url 'product' %}"
      data-category-url="{% url 'product_category' %}"
+     data-product-update-page-url="{% url 'product_update_page' %}"
      data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
      data-user-name="{{ user.first_name|default:user.username }}"
      data-is-admin="{% if user.is_superuser %}true{% else %}false{% endif %}">

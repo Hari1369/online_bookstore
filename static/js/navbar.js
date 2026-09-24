@@ -1,7 +1,4 @@
-/* navbar.js — renders the top nav into <div id="navbar"></div> on every page.
-   Django template tags ({% url %}) are NOT processed in static JS files, so the
-   URLs and the login state are read from the data-* attributes that base.html
-   puts on #navbar (login state comes from Django's session, not localStorage). */
+/* navbar.js */
 
 function renderNavbar() {
   const mount = document.getElementById('navbar');
@@ -16,28 +13,28 @@ function renderNavbar() {
     logout: mount.dataset.logoutUrl || '',
     users: mount.dataset.usersUrl || '#',
     product: mount.dataset.productUrl || '#',
-    category: mount.dataset.categoryUrl || '#'
+    category: mount.dataset.categoryUrl || '#',
+    productUpdatePage: mount.dataset.productUpdatePageUrl || '#'
   };
-
-  // Real login state from Django (set in base.html)
   const isLoggedIn = mount.dataset.authenticated === 'true';
-  const isAdmin = mount.dataset.isAdmin === 'true';   // superuser only
+  const isAdmin = mount.dataset.isAdmin === 'true';
   const displayName = (mount.dataset.userName || 'Account').split(' ')[0];
-  const cartCount = Cart.count();
+  const cartCount = typeof Cart !== 'undefined' ? Cart.count() : 0;
 
   mount.innerHTML = `
     <nav class="site-nav">
       <div class="wrap">
         <a class="brand" href="${urls.main}">Online Bookstore</a>
-        <form class="nav-search" id="navSearchForm" role="search">
+        <form class="nav-search" id="navSearchForm" role="search" action="${urls.main}" method="GET">
           <label for="navSearchInput" class="visually-hidden">Search books</label>
-          <input id="navSearchInput" type="search" placeholder="Search titles or authors…" />
+          <input id="navSearchInput" name="q" type="search" placeholder="Search titles or authors…" />
         </form>
         <div class="nav-links">
           <a href="${urls.main}">Browse</a>
           <a href="${urls.cart}">Cart${cartCount ? `<span class="cart-count">${cartCount}</span>` : ''}</a>
           ${isLoggedIn ? `<a href="${urls.orders}">Orders</a>` : ''}
           ${isAdmin ? `<a href="${urls.product}">Add Book</a>` : ''}
+          ${isAdmin ? `<a href="${urls.productUpdatePage}">Manage Books</a>` : ''}
           ${isAdmin ? `<a href="${urls.category}">Categories</a>` : ''}
           ${isAdmin ? `<a href="${urls.users}">Users</a>` : ''}
           ${isLoggedIn
@@ -48,20 +45,34 @@ function renderNavbar() {
       </div>
     </nav>`;
 
-  const form = document.getElementById('navSearchForm');
-  const params = new URLSearchParams(location.search);
-  document.getElementById('navSearchInput').value = params.get('q') || '';
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const q = document.getElementById('navSearchInput').value.trim();
-    location.href = urls.main + (q ? '?q=' + encodeURIComponent(q) : '');
-  });
+  const searchInput = document.getElementById('navSearchInput');
+  const params = new URLSearchParams(window.location.search);
+  const currentQuery = params.get('q') || '';
+  
+  if (searchInput) {
+    searchInput.value = currentQuery;
+  }
 
-  // Also clear the old localStorage session; the link itself goes to Django's logout view.
+  const form = document.getElementById('navSearchForm');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = searchInput.value.trim();
+      const redirectUrl = urls.main + (query ? '?q=' + encodeURIComponent(query) : '');
+      window.location.href = redirectUrl;
+    });
+  }
+
   const logout = document.getElementById('navLogout');
-  if (logout) {
+  if (logout && typeof Session !== 'undefined') {
     logout.addEventListener('click', () => { Session.clear(); });
   }
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, 
+    tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+  );
 }
 
 document.addEventListener('DOMContentLoaded', renderNavbar);

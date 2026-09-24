@@ -2,11 +2,87 @@
 {% load static %}
 
 {% block title %}Dashboard — Book Catalogue{% endblock %}
+
 {% block content %}
 <main class="section">
 
   <div class="wrap">
-    <h2>All Books in System</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      {% if search_query %}
+        <h2>Search Results for "{{ search_query }}"</h2>
+        <a href="{% url 'main' %}" class="btn btn-secondary" style="text-decoration: none;">Clear Search</a>
+      {% else %}
+        <h2>All Books in System</h2>
+      {% endif %}
+    </div>
+
+
+    <form method="GET" class="book-filters">
+
+    <!-- Keep search query when filtering -->
+    {% if search_query %}
+        <input type="hidden" name="q" value="{{ search_query }}">
+    {% endif %}
+
+    <!-- Category -->
+    <div class="filter-group">
+        <label for="category">Category</label>
+
+        <select name="category" id="category">
+            <option value="">All Categories</option>
+
+            {% for category in categories %}
+                <option value="{{ category.id }}"
+                    {% if selected_category == category.id|stringformat:"s" %}
+                        selected
+                    {% endif %}>
+                    {{ category.choice }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Minimum Price -->
+    <div class="filter-group">
+        <label for="min_price">Min Price</label>
+
+        <input
+            type="number"
+            name="min_price"
+            id="min_price"
+            placeholder="Minimum"
+            min="0"
+            step="0.01"
+            value="{{ min_price }}"
+        >
+    </div>
+
+    <!-- Maximum Price -->
+    <div class="filter-group">
+        <label for="max_price">Max Price</label>
+
+        <input
+            type="number"
+            name="max_price"
+            id="max_price"
+            placeholder="Maximum"
+            min="0"
+            step="0.01"
+            value="{{ max_price }}"
+        >
+    </div>
+
+    <button type="submit" class="filter-btn">
+        Apply Filters
+    </button>
+
+    <a href="{% url 'main' %}" class="clear-filter-btn">
+        Clear Filters
+    </a>
+
+</form>
+
+
     <div class="book-grid">
       {% for book in books %}
         <article class="book-card">
@@ -30,7 +106,7 @@
               {% if book.available_copies == 0 %}
                 <button type="button" class="add-cart-btn" disabled> Out of Stock </button>
               {% else %}
-              <button type="button" class="add-cart-btn" data-book-id="{{ book.id }}" onclick="addToCart(this)"> Add to Cart </button>
+                <button type="button" class="add-cart-btn" data-book-id="{{ book.id }}" onclick="addToCart(this)"> Add to Cart </button>
               {% endif %}
               <button type="button" class="wishlist-btn" data-book-id="{{ book.id }}" onclick="addToWishlist(this)"> Add to Wishlist </button>
             </div>
@@ -39,13 +115,18 @@
         </article>
 
       {% empty %}
-        <p class="empty-state">No books available in the system database</p>
+        <p class="empty-state">
+          {% if search_query %}
+            No books found matching "{{ search_query }}". <a href="{% url 'main' %}">View all books</a>
+          {% else %}
+            No books available in the system database
+          {% endif %}
+        </p>
       {% endfor %}
     </div>
   </div>
 
 </main>
-
 {% endblock %}
 {% block scripts %}
 

@@ -56,7 +56,7 @@ img{max-width:100%; display:block;}
 }
 .brand{
   font-family:var(--serif);
-  font-size:1.4rem;
+  font-size:1.2rem;
   color:var(--paper);
   letter-spacing:.01em;
   margin-right:auto;
@@ -64,7 +64,7 @@ img{max-width:100%; display:block;}
 }
 .brand:hover{text-decoration:none; color:#fff;}
 .nav-links{display:flex; align-items:center; gap:20px; flex-wrap:wrap;}
-.nav-links a{color:#D8D2C4; font-size:.94rem;}
+.nav-links a{color:#D8D2C4; font-size:.82rem;}
 .nav-links a:hover{color:#fff; text-decoration:none;}
 .nav-links .cart-count{
   background:var(--brass); color:var(--ink); border-radius:50%;
@@ -76,7 +76,7 @@ img{max-width:100%; display:block;}
 }
 .nav-search input{
   background:transparent; border:none; color:#fff; font-family:var(--sans);
-  font-size:.9rem; outline:none; width:100%;
+  font-size:.82rem; outline:none; width:100%;
 }
 .nav-search input::placeholder{color:#8B978F;}
 
@@ -1237,3 +1237,90 @@ img{max-width:100%; display:block;}
     background: #b3442f;
 }
  
+
+
+.book-active,
+.book-inactive {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.book-active {
+    color: #198754;
+    background: #e8f5e9;
+}
+
+.book-inactive {
+    color: #dc3545;
+    background: #fdecec;
+}
+
+.book-table th {
+    padding: 14px 16px;
+    background: var(--ink);
+    color: var(--paper);
+    border-bottom: 2px solid var(--line);
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.book-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 0.9rem;
+    vertical-align: middle;
+    text-align: center;
+}
+
+
+
+.book-filters {
+    display: flex;
+    align-items: end;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+    padding: 15px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-weight: 600;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.filter-btn,
+.clear-filter-btn {
+    padding: 9px 15px;
+    border-radius: 5px;
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.filter-btn {
+    background: #333;
+    color: white;
+}
+
+.clear-filter-btn {
+    background: #ddd;
+    color: #333;
+}
