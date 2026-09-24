@@ -235,7 +235,7 @@ def cart_add(request, product_id):
             CartItem.objects.create(cart=cart, product=product, quantity=qty)
 
     return JsonResponse({
-        "message": f"“{product.title}” added to your cart.",
+        "message": f"“{product.title}” added to your cart!",
         "cart_count": _cart_count(request.user),
     })
 

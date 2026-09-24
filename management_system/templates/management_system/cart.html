@@ -117,8 +117,6 @@ if (table) {
         updateSummary(data);
     }
 
-
-
     const rows = table.querySelectorAll("tbody tr");
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
@@ -171,10 +169,7 @@ if (table) {
             }
             updateSummary(data);
         });
-
     }
-
-
 
     const placeOrderButton = document.getElementById("placeOrderBtn");
     placeOrderButton.addEventListener("click", async function() {
@@ -207,7 +202,6 @@ if (table) {
         }
     );
 }
-
 </script>
 
 

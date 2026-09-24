@@ -15,7 +15,7 @@
   <h1>{% if is_admin %}All orders{% else %}Your orders{% endif %}</h1>
 
   {% for message in messages %}
-    <div class="form-alert show">{{ message }}</div>
+  <div class="form-alert show">{{ message }}</div>
   {% endfor %}
   <div class="form-alert error" id="ordersAlert" role="alert"></div>
 
@@ -64,6 +64,113 @@
 {% block scripts %}
 {% if is_admin %}
 <script>
+const csrf = document.querySelector('meta[name="csrf-token"]').content;
+const alertBox = document.getElementById("ordersAlert");
+
+function showError(message) {
+    alertBox.textContent = message;
+    alertBox.classList.add("show");
+}
+
+function clearError() {
+    alertBox.classList.remove("show");
+}
+
+const cards = document.querySelectorAll(".order-card");
+for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
+    const select = card.querySelector(".status-select");
+    const pill = card.querySelector(".status-pill");
+    const deleteButton = card.querySelector(".delete-order-btn");
+
+    select.addEventListener("change", async function() {
+        clearError();
+        const response = await fetch(
+            card.dataset.updateUrl,
+            {
+                method: "PUT",
+
+                headers: {
+                    "X-CSRFToken": csrf,
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    status: select.value
+                })
+            }
+        );
+        const data = await response.json();
+        if (!response.ok) {
+            showError(data.error || "Could not update the status!");
+            select.value = card.dataset.status;
+            return;
+        }
+        card.dataset.status = data.order.status;
+        pill.className = "status-pill status-" + data.order.status.toLowerCase();
+        pill.textContent = data.order.status_display;
+        if (data.order.status === "CANCELLED") {
+            select.disabled = true;
+        }
+    });
+
+    deleteButton.addEventListener("click", async function() {
+        const id = card.querySelector(".order-id").textContent.trim();
+        const confirmDelete = confirm("Delete order " + id + " permanently?");
+        if (!confirmDelete) {
+            return;
+        }
+        clearError();
+        const response = await fetch(
+            card.dataset.deleteUrl,
+            {
+                method: "DELETE",
+
+                headers: {
+                    "X-CSRFToken": csrf
+                }
+            }
+        );
+        const data = await response.json();
+        if (!response.ok) {
+            showError(
+                data.error || "Could not delete the order."
+            );
+            return;
+        }
+        card.remove();
+        const remainingCards = document.querySelectorAll(".order-card");
+        if (remainingCards.length === 0) {
+            location.reload();
+        }
+    });
+}
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <script>
 (function () {
   const csrf     = document.querySelector('meta[name="csrf-token"]').content;
   const alertBox = document.getElementById('ordersAlert');
@@ -107,6 +214,6 @@
     });
   });
 })();
-</script>
+</script> -->
 {% endif %}
 {% endblock %}
