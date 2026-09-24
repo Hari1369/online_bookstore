@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Update Book — Online Bookstore{% endblock %}
+
+{% block content %}
+
+<div class="book-table-container">
+    <h2>Manage Books</h2>
+
+    <div class="book-search">
+        <form method="GET" action="">
+            <input
+                type="text"
+                name="search"
+                id="bookSearch"
+                placeholder="Search books..."
+                value="{{ search_query }}"
+            >
+            <button type="submit">Search</button>
+            {% if search_query %}
+                <a href="{% url 'product_update_page' %}">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <table class="book-table">
+
+        <thead>
+            <tr>
+                <th>Sr No.</th>
+                <th hidden>ID</th>
+                <th>ISBN</th>
+                <th>Title</th>
+                <th hidden>Author</th>
+                <th>Price</th>
+                <th>Publication Year</th>
+                <th>Category</th>
+                <th>Total Copies</th>
+                <th>Available Copies</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody id="bookTableBody">
+            {% for product in product_details %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td hidden>{{ product.id }}</td>
+                <td data-col="isbn">{{ product.isbn }}</td>
+                <td data-col="title">{{ product.title }}</td>
+                <td hidden data-col="author">{{ product.author }}</td>
+                <td data-col="price">₹{{ product.price }}</td>
+                <td data-col="year">{{ product.publication_year }}</td>
+                <td data-col="category">{{ product.category }}</td>
+                <td data-col="total">{{ product.total_copies }}</td>
+                <td data-col="available">{{ product.available_copies }}</td>
+                <td>
+                    <div class="action-cell">
+                        <a
+                            href="#"
+                            class="book-update-btn"
+                            data-url="{% url 'product_update' product.id %}"
+                            data-isbn="{{ product.isbn }}"
+                            data-title="{{ product.title }}"
+                            data-author="{{ product.author }}"
+                            data-description="{{ product.description }}"
+                            data-category="{{ product.category_id }}"
+                            data-price="{{ product.price|stringformat:'.2f' }}"
+                            data-year="{{ product.publication_year }}"
+                            data-total="{{ product.total_copies }}"
+                            data-available="{{ product.available_copies }}"
+                            data-active="{{ product.is_active|yesno:'true,false' }}"
+                        >Update</a>
+                        <a href="#" class="book-delete-btn">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9">No books found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<!-- =====================================================
+     UPDATE MODAL (one modal, reused for every book)
+     ===================================================== -->
+<div class="modal-overlay book-modal-overlay" id="bookEditModal">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="bookEditTitle">
+
+        <button type="button" class="modal-close" id="bookEditClose" aria-label="Close">&times;</button>
+
+        <h2 id="bookEditTitle">Update Book</h2>
+
+        <div class="form-alert error" id="bookEditError"></div>
+
+        <form id="bookEditForm" class="book-form" novalidate>
+            {% csrf_token %}
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="editIsbn">ISBN</label>
+                    <input type="text" id="editIsbn" name="isbn" class="book-input" required>
+                </div>
+                <div class="field">
+                    <label for="editTitle">Title</label>
+                    <input type="text" id="editTitle" name="title" class="book-input" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="editAuthor">Author</label>
+                    <input type="text" id="editAuthor" name="author" class="book-input" required>
+                </div>
+                <div class="field">
+                    <label for="editCategory">Category</label>
+                    <select id="editCategory" name="category" required>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.choice }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="editDescription">Description</label>
+                <textarea id="editDescription" name="description" rows="4" required></textarea>
+            </div>
+
+            <div class="form-row grid-3">
+                <div class="field">
+                    <label for="editPrice">Price</label>
+                    <input type="number" id="editPrice" name="price" class="book-input" step="0.01" min="0" required>
+                </div>
+                <div class="field">
+                    <label for="editYear">Publication Year</label>
+                    <input type="number" id="editYear" name="publication_year" class="book-input" required>
+                </div>
+                <div class="field">
+                    <label for="editTotal">Total Copies</label>
+                    <input type="number" id="editTotal" name="total_copies" class="book-input" min="0" required>
+                </div>
+            </div>
+
+            <div class="availability-row">
+                <div class="field available-copies-field">
+                    <label for="editAvailable">Available Copies</label>
+                    <input type="number" id="editAvailable" name="available_copies" class="book-input" min="0" required>
+                </div>
+                <div class="field checkbox-field">
+                    <label for="editActive">
+                        <input type="checkbox" id="editActive" name="is_active" class="book-checkbox">
+                        Active / available for sale
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="bookEditCancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="bookEditSave">Save changes</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<div id="bookToast"></div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+    "use strict";
+ 
+    const overlay = document.getElementById("bookEditModal");
+    const form = document.getElementById("bookEditForm");
+    if (!overlay || !form) return;
+ 
+    const tbody = document.getElementById("bookTableBody");
+    const errorBox = document.getElementById("bookEditError");
+    const saveBtn = document.getElementById("bookEditSave");
+    const toast = document.getElementById("bookToast");
+ 
+    let activeButton = null;
+    let toastTimer = null;
+ 
+    // form field name -> data-* key on the Update button
+    const FIELD_MAP = {
+        isbn: "isbn",
+        title: "title",
+        author: "author",
+        description: "description",
+        category: "category",
+        price: "price",
+        publication_year: "year",
+        total_copies: "total",
+        available_copies: "available",
+    };
+ 
+    /* ---------- helpers ---------- */
+ 
+    function showToast(message, isError) {
+        if (!toast) return;
+        toast.textContent = message;
+        toast.className = isError ? "error" : "";
+        toast.style.display = "block";
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+            toast.style.display = "none";
+        }, 3000);
+    }
+ 
+    function clearError() {
+        errorBox.textContent = "";
+        errorBox.classList.remove("show");
+    }
+ 
+    function showError(message) {
+        errorBox.textContent = message;
+        errorBox.classList.add("show");
+    }
+ 
+    function showErrors(errors) {
+        const lines = [];
+        Object.keys(errors).forEach(function (field) {
+            const label = field === "__all__" ? "" : field.replace(/_/g, " ") + ": ";
+            errors[field].forEach(function (msg) {
+                lines.push(label + msg);
+            });
+        });
+        showError(lines.join("\n"));
+    }
+ 
+    /* ---------- open / close ---------- */
+ 
+    function openModal(btn) {
+        activeButton = btn;
+        clearError();
+ 
+        Object.keys(FIELD_MAP).forEach(function (name) {
+            const value = btn.dataset[FIELD_MAP[name]];
+            form.elements[name].value = value !== undefined ? value : "";
+        });
+        form.elements["is_active"].checked = btn.dataset.active === "true";
+ 
+        overlay.style.display = "flex";
+        form.elements["isbn"].focus();
+    }
+ 
+    function closeModal() {
+        overlay.style.display = "none";
+        activeButton = null;
+    }
+ 
+    tbody.addEventListener("click", function (e) {
+        const btn = e.target.closest(".book-update-btn");
+        if (!btn) return;
+        e.preventDefault();
+        openModal(btn);
+    });
+ 
+    document.getElementById("bookEditCancel").addEventListener("click", closeModal);
+    document.getElementById("bookEditClose").addEventListener("click", closeModal);
+ 
+    overlay.addEventListener("click", function (e) {
+        if (e.target === overlay) closeModal();
+    });
+ 
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && overlay.style.display === "flex") closeModal();
+    });
+ 
+    /* ---------- update the table row after saving ---------- */
+ 
+    function applyUpdate(btn, book) {
+        const row = btn.closest("tr");
+ 
+        function setCell(col, text) {
+            const cell = row.querySelector('[data-col="' + col + '"]');
+            if (cell) cell.textContent = text;
+        }
+ 
+        setCell("isbn", book.isbn);
+        setCell("title", book.title);
+        setCell("author", book.author);
+        setCell("price", "\u20B9" + book.price);
+        setCell("year", book.publication_year);
+        setCell("category", book.category_name);
+        setCell("total", book.total_copies);
+        setCell("available", book.available_copies);
+ 
+        // keep the button's data in sync so re-opening shows the new values
+        btn.dataset.isbn = book.isbn;
+        btn.dataset.title = book.title;
+        btn.dataset.author = book.author;
+        btn.dataset.description = book.description;
+        btn.dataset.category = book.category_id;
+        btn.dataset.price = book.price;
+        btn.dataset.year = book.publication_year;
+        btn.dataset.total = book.total_copies;
+        btn.dataset.available = book.available_copies;
+        btn.dataset.active = book.is_active ? "true" : "false";
+    }
+ 
+    /* ---------- submit ---------- */
+ 
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        if (!activeButton) return;
+ 
+        clearError();
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+ 
+        try {
+            const response = await fetch(activeButton.dataset.url, {
+                method: "POST",
+                body: new FormData(form),
+                headers: { "X-Requested-With": "XMLHttpRequest" },
+                credentials: "same-origin",
+            });
+ 
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (err) {
+                data = null;
+            }
+ 
+            if (response.ok && data && data.success) {
+                applyUpdate(activeButton, data.book);
+                closeModal();
+                showToast(data.message);
+            } else if (data && data.errors) {
+                showErrors(data.errors);
+            } else {
+                showError("Could not save changes. Please try again.");
+            }
+        } catch (err) {
+            showError("Network error. Please check your connection and try again.");
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Save changes";
+        }
+    });
+})();
+ 
+</script>
+{% endblock %}

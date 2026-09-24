@@ -137,3 +137,57 @@ class ProductBookDetailsForm(forms.ModelForm):
             if not pdf.name.lower().endswith(".pdf"):
                 raise forms.ValidationError("Only PDF files are allowed!")
         return pdf
+
+
+class ProductBookUpdateForm(forms.ModelForm):
+    class Meta:
+        model = ProductBookDetails
+        fields = [
+            "isbn",
+            "title",
+            "author",
+            "description",
+            "category",
+            "price",
+            "publication_year",
+            "image",
+            "pdf",
+            "total_copies",
+            "available_copies",
+            "is_active",
+        ]
+ 
+        widgets = {
+            "isbn": forms.TextInput(attrs={"class": "form-control"}),
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "author": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "category": forms.Select(attrs={"class": "form-select"}),
+            "price": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "publication_year": forms.NumberInput(attrs={"class": "form-control"}),
+            "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "pdf": forms.ClearableFileInput(attrs={"class": "form-control", "accept": ".pdf"}),
+            "total_copies": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+            "available_copies": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+ 
+    def clean_available_copies(self):
+        available = self.cleaned_data["available_copies"]
+        total = self.cleaned_data.get("total_copies")
+ 
+        if total is not None and available > total:
+            raise forms.ValidationError(
+                "Available copies cannot be greater than total copies."
+            )
+ 
+        return available
+ 
+    def clean_pdf(self):
+        pdf = self.cleaned_data.get("pdf")
+ 
+        if pdf and not pdf.name.lower().endswith(".pdf"):
+            raise forms.ValidationError("Only PDF files are allowed.")
+ 
+        return pdf
+ 

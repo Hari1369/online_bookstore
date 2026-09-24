@@ -1003,7 +1003,7 @@ img{max-width:100%; display:block;}
 
 
 
-  .form-alert {
+.form-alert {
     display: none;
     padding: 10px 15px;
     margin-bottom: 15px;
@@ -1023,3 +1023,217 @@ img{max-width:100%; display:block;}
 .form-alert.show {
     display: block;
 }
+
+
+
+
+/* =========================
+   MANAGE BOOKS TABLE
+   ========================= */
+
+.book-table-container {
+    width: 100%;
+    margin-top: 25px;
+    overflow-x: auto; /* Fallback scrollbar if screen is very narrow */
+}
+
+.book-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border: 1px solid var(--line);
+    table-layout: auto; /* Let browser fluidly calculate widths */
+}
+
+.book-table th {
+    padding: 10px 8px; /* Reduced horizontal padding */
+    background: var(--ink);
+    color: var(--paper);
+    border-bottom: 2px solid var(--line);
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap; /* Keep header text clean */
+}
+
+.book-table td {
+    padding: 10px 8px; /* Compact padding */
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 0.85rem;
+    vertical-align: middle;
+    word-break: break-word; /* Prevents long titles from overflowing */
+}
+
+.book-table tbody tr:hover {
+    background: #f8f6f0;
+}
+
+/* Align numeric data to center or right for better layout balance */
+.book-table th:first-child, 
+.book-table td:first-child {
+    text-align: center;
+    width: 40px; /* Snug width for Sr No. */
+}
+
+/* Make action buttons stack nicely on tight screens or align side-by-side */
+.book-table td:last-child {
+    white-space: nowrap;
+    text-align: center;
+}
+
+.action-cell {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Action buttons */
+.book-update-btn,
+.book-delete-btn {
+    padding: 5px 10px; /* Reduced button padding */
+    border-radius: var(--radius);
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.book-update-btn {
+    background: var(--brass);
+    color: #fff;
+    border: 1px solid var(--brass);
+}
+
+.book-update-btn:hover {
+    background: var(--brass-dark);
+    border-color: var(--brass-dark);
+    color: #fff;
+}
+
+.book-delete-btn {
+    background: transparent;
+    color: var(--error);
+    border: 1px solid var(--error);
+}
+
+.book-delete-btn:hover {
+    background: var(--error);
+    color: #fff;
+}
+
+/* =========================
+   SEARCH BAR
+   ========================= */
+
+.book-search {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.book-search form {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+}
+
+.book-search input[type="text"] {
+    flex: 1;
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--ink);
+    box-sizing: border-box;
+}
+
+.book-search input[type="text"]:focus {
+    outline: 2px solid var(--teal);
+    outline-offset: 1px;
+}
+
+.book-search button,
+.book-search a {
+    white-space: nowrap;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+}
+
+
+
+
+
+
+
+
+
+
+/* =========================
+   UPDATE BOOK MODAL
+   (append to the bottom of your CSS file)
+   Reuses: .modal-overlay, .modal-box, .modal-close, .modal-actions,
+   .btn-secondary, .book-form, .form-row, .field, .availability-row
+   ========================= */
+ 
+.book-modal-overlay .modal-box {
+    width: 680px;
+    max-width: 94vw;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+ 
+/* error message inside the modal (one line per error) */
+#bookEditError {
+    white-space: pre-line;
+    margin-bottom: 16px;
+}
+ 
+/* the modal's form rows need a little breathing room from the checkbox row */
+.book-modal-overlay .availability-row {
+    margin-bottom: 4px;
+}
+ 
+/* stack the row fields on small screens */
+@media (max-width: 650px) {
+    .book-modal-overlay .modal-box {
+        padding: 22px 18px;
+    }
+    .book-modal-overlay .availability-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+    }
+    .book-modal-overlay .checkbox-field {
+        padding-top: 0;
+        margin-bottom: 16px;
+    }
+}
+ 
+/* toast */
+#bookToast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    max-width: 320px;
+    z-index: 1100;
+    background: #1d2b26;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 4px;
+    display: none;
+    font-size: 0.9rem;
+}
+ 
+#bookToast.error {
+    background: #b3442f;
+}
+ 

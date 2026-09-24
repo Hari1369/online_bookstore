@@ -20,7 +20,7 @@ from members.decorators import admin_required, admin_api_required
 
 from members.decorators import admin_api_required, login_required_api, login_required_page
 from .models import CartItem, CartManagement, Order, OrderItem, ProductBookDetails, ProductBookCategory
-from .forms import (ProductBookCategoryForm, BookCategoryCSVForm, ProductBookDetailsForm) 
+from .forms import (ProductBookCategoryForm, BookCategoryCSVForm, ProductBookDetailsForm, ProductBookUpdateForm) 
 from django.views.decorators.http import require_http_methods
 
 
@@ -116,6 +116,119 @@ def product_category_page(request):
         }
     )
 
+from django.db.models import Q
+from django.shortcuts import render
+
+
+@admin_required
+def product_update_page(request):
+    search = request.GET.get("search", "").strip()
+    books = ProductBookDetails.objects.select_related("category").order_by("-id")
+    categories = ProductBookCategory.objects.all()
+    if search:
+        books = books.filter(
+            Q(title__icontains=search)
+            | Q(author__icontains=search)
+            | Q(isbn__icontains=search)
+        )
+
+    return render(request, "management_system/product_details.html",{"categories": categories, "product_details": books, "search_query": search})
+
+@admin_required
+@require_POST
+def product_update(request, product_id):
+    book = get_object_or_404(ProductBookDetails, id=product_id)
+    
+    # Extract fields from POST data
+    isbn = request.POST.get("isbn", "").strip()
+    title = request.POST.get("title", "").strip()
+    author = request.POST.get("author", "").strip()
+    category_id = request.POST.get("category")
+    description = request.POST.get("description", "").strip()
+    price = request.POST.get("price")
+    publication_year = request.POST.get("publication_year")
+    total_copies = request.POST.get("total_copies")
+    available_copies = request.POST.get("available_copies")
+    is_active = request.POST.get("is_active") == "on"
+
+    errors = {}
+
+    if not isbn:
+        errors["isbn"] = ["ISBN is required."]
+    if not title:
+        errors["title"] = ["Title is required."]
+    if not author:
+        errors["author"] = ["Author is required."]
+        
+    try:
+        category = Category.objects.get(id=category_id)
+    except (Category.DoesNotExist, ValueError, TypeError):
+        errors["category"] = ["Select a valid category."]
+
+    try:
+        price = float(price)
+        if price < 0:
+            errors["price"] = ["Price must be 0 or greater."]
+    except (ValueError, TypeError):
+        errors["price"] = ["Enter a valid price."]
+
+    try:
+        publication_year = int(publication_year)
+    except (ValueError, TypeError):
+        errors["publication_year"] = ["Enter a valid year."]
+
+    try:
+        total_copies = int(total_copies)
+        if total_copies < 0:
+            errors["total_copies"] = ["Total copies cannot be negative."]
+    except (ValueError, TypeError):
+        errors["total_copies"] = ["Enter a valid number for total copies."]
+
+    try:
+        available_copies = int(available_copies)
+        if available_copies < 0:
+            errors["available_copies"] = ["Available copies cannot be negative."]
+        elif 'total_copies' not in errors and available_copies > total_copies:
+            errors["available_copies"] = ["Available copies cannot exceed total copies."]
+    except (ValueError, TypeError):
+        errors["available_copies"] = ["Enter a valid number for available copies."]
+
+    # Return errors if validation fails
+    if errors:
+        return JsonResponse({"success": False, "errors": errors}, status=400)
+
+    # Update book model attributes
+    book.isbn = isbn
+    book.title = title
+    book.author = author
+    book.category = category
+    book.description = description
+    book.price = price
+    book.publication_year = publication_year
+    book.total_copies = total_copies
+    book.available_copies = available_copies
+    book.is_active = is_active
+    book.save()
+
+    # Return JSON structure required by your JavaScript
+    return JsonResponse({
+        "success": True,
+        "message": "Book updated successfully!",
+        "book": {
+            "id": book.id,
+            "isbn": book.isbn,
+            "title": book.title,
+            "author": book.author,
+            "description": book.description,
+            "category_id": book.category.id,
+            "category_name": str(book.category),
+            "price": f"{book.price:.2f}",
+            "publication_year": book.publication_year,
+            "total_copies": book.total_copies,
+            "available_copies": book.available_copies,
+            "is_active": book.is_active,
+        }
+    })
 
 @require_http_methods(["PUT"])
 @admin_api_required
@@ -174,7 +287,6 @@ def _new_order_number():
 
 
 def _restock(order):
-    """Give the copies of every item in `order` back to the shelf."""
     for line in order.orderitem_set.all():
         ProductBookDetails.objects.filter(pk=line.product_id).update(
             available_copies=F("available_copies") + line.quantity
@@ -251,7 +363,7 @@ def cart_update(request, item_id):
     body = _json_body(request)
 
     if body is None:
-        return _error("Invalid JSON.")
+        return _error("Invalid JSON!")
     
     if "quantity" not in body:
         return _error("Send the new quantity as JSON, e.g. {\"quantity\": 2}.")
@@ -291,7 +403,6 @@ def cart_update(request, item_id):
 @require_http_methods(["DELETE"])
 @login_required_api
 def cart_remove(request, item_id):
-    """DELETE: remove one item from the cart."""
     deleted, _ = CartItem.objects.filter(pk=item_id, cart__user=request.user).delete()
     if not deleted:
         return _error("Cart item not found.", 404)
@@ -306,7 +417,6 @@ def cart_remove(request, item_id):
 @require_POST
 @login_required_api
 def order_place(request):
-    """CREATE: turn the cart into an order, reduce stock, empty the cart."""
     with transaction.atomic():
         cart = CartManagement.objects.filter(user=request.user).first()
         cart_items = list(CartItem.objects.filter(cart=cart)) if cart else []
@@ -356,7 +466,6 @@ def order_place(request):
 
 @login_required_page
 def orders_page(request):
-    """VIEW: customers see their own orders, admins see everybody's."""
     is_admin = request.user.is_superuser
     orders = (
         Order.objects.select_related("user")
@@ -376,7 +485,6 @@ def orders_page(request):
 @require_http_methods(["PUT"])
 @admin_api_required
 def order_update(request, order_id):
-    """UPDATE (admin): change an order's status (body: {"status": "SHIPPED"})."""
     body = _json_body(request)
     new_status = str((body or {}).get("status", "")).upper()
     if new_status not in dict(Order.STATUS_CHOICES):
@@ -406,15 +514,12 @@ def order_update(request, order_id):
 @require_http_methods(["DELETE"])
 @admin_api_required
 def order_delete(request, order_id):
-    """DELETE (admin): permanently remove an order."""
     with transaction.atomic():
         try:
             order = Order.objects.select_for_update().get(pk=order_id)
         except Order.DoesNotExist:
             return _error("Order not found.", 404)
 
-        # PENDING / SHIPPED orders still hold stock -> give it back.
-        # CANCELLED were already restocked; DELIVERED copies have left the shop.
         if order.status in ("PENDING", "SHIPPED"):
             _restock(order)
         number = order.order_number

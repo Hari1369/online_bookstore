@@ -92,37 +92,34 @@
                     </div>
                 </div>
 
-<div class="form-row availability-row">
+                <div class="form-row availability-row">
+                    <div class="field available-copies-field">
+                        <label for="{{ form.available_copies.id_for_label }}">
+                            Available Copies *
+                        </label>
 
-    <div class="field available-copies-field">
-        <label for="{{ form.available_copies.id_for_label }}">
-            Available Copies *
-        </label>
+                        {{ form.available_copies }}
 
-        {{ form.available_copies }}
+                        {% if form.available_copies.errors %}
+                            <div class="err-text">
+                                {{ form.available_copies.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
 
-        {% if form.available_copies.errors %}
-            <div class="err-text">
-                {{ form.available_copies.errors }}
-            </div>
-        {% endif %}
-    </div>
+                    <div class="field checkbox-field">
+                        <label for="{{ form.is_active.id_for_label }}">
+                            {{ form.is_active }}
+                            <span>Is Active / Available for Sale</span>
+                        </label>
 
-    <div class="field checkbox-field">
-        <label for="{{ form.is_active.id_for_label }}">
-            {{ form.is_active }}
-            <span>Is Active / Available for Sale</span>
-        </label>
-
-        {% if form.is_active.errors %}
-            <div class="err-text">
-                {{ form.is_active.errors }}
-            </div>
-        {% endif %}
-    </div>
-
-</div>
-
+                        {% if form.is_active.errors %}
+                            <div class="err-text">
+                                {{ form.is_active.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
             <hr class="section-divider">
@@ -150,7 +147,6 @@
                 </button>
             </div>
         </form>
-
     </div>
 
 </main>
