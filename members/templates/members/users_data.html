@@ -11,6 +11,12 @@
     <div class="section-head">
         <h1 style="margin:0;">All Users</h1>
     </div>
+
+    <div class="mb-3">
+        <input type="text" id="userdataSearch" class="form-control" placeholder="Search book User ...">
+    </div>
+
+
     <div class="users-table-container">
         <table class="users-table">
             <thead>
@@ -26,7 +32,7 @@
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody id="userTableBody">
                 {% for u in users %}
                 <tr id="user-row-{{ u.id }}"
                     data-id="{{ u.id }}"
@@ -87,7 +93,6 @@
             </tbody>
 
         </table>
-
     </div>
 
 </main>
@@ -131,6 +136,37 @@
 
 {% block scripts %}
 <script>
+
+document.getElementById("userdataSearch").addEventListener("keyup", function () {
+    var searchText = this.value.toLowerCase();
+    var rows = document.querySelectorAll("#userTableBody tr");
+    for (var i = 0; i < rows.length; i++) {
+
+        var row = rows[i];
+        var firstName = row.querySelector(".c-first");
+        var lastName = row.querySelector(".c-last");
+        var email = row.querySelector(".c-email");
+
+        if (firstName && lastName && email) {
+
+            var firstNameText = firstName.textContent.toLowerCase();
+            var lastNameText = lastName.textContent.toLowerCase();
+            var emailText = email.textContent.toLowerCase();
+
+            if (
+                firstNameText.includes(searchText) ||
+                lastNameText.includes(searchText) ||
+                emailText.includes(searchText)
+            ) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        }
+    }
+});
+
+
 (function () {
   const dialog   = document.getElementById('editUserDialog');
   const form     = document.getElementById('editUserForm');

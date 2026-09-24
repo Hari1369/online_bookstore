@@ -18,6 +18,7 @@
     {% endif %}
 
 
+
     <div class="category-grid">
         <div class="category-card">
             <h2>Add Category</h2>
@@ -50,6 +51,10 @@
         </div>
     </div>
     
+    <div class="mb-3">
+        <input type="text" id="categorySearch" class="form-control" placeholder="Search book category...">
+    </div>
+
 
     <div class="category-card table-card">
         <h2>Existing Categories</h2>
@@ -64,7 +69,7 @@
                     </tr>
                 </thead>
 
-                <tbody>
+                <tbody id="categoryTableBody">
                     {% for category in categories %}
                     <tr>
                         <td class="col-id">{{ category.id }}</td>
@@ -98,8 +103,25 @@
     </div>
 </main>
 
-
 <script>
+    document.getElementById("categorySearch").addEventListener("keyup", function () {
+        let searchText = this.value.toLowerCase();
+        let rows = document.querySelectorAll("#categoryTableBody tr");
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            let category = row.querySelector(".col-name");
+            if (category) {
+                let categoryText = category.textContent.toLowerCase();
+                if (categoryText.includes(searchText)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            }
+        }
+    });
+
+
 // function updateCategory(categoryId, currentCategory) {
 
 //     console.log("CATEGORY ID : ", categoryId);

@@ -108,7 +108,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
+MAILERS = {
+    'default': {
+        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
@@ -138,12 +142,34 @@ STATIC_ROOT = BASE_DIR.parent / "staticfiles"
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
+_email_user = os.environ.get("EMAIL_USER", "")
+_email_app_password = os.environ.get("EMAIL_APP_PASSWORD", "")
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+if _email_user and _email_app_password:
+    MAILERS = {
+        "default": {
+            "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+            "OPTIONS": {
+                "host": "smtp.gmail.com",
+                "port": 587,
+                "username": _email_user,
+                "password": _email_app_password,
+                "use_tls": True,
+            },
+        },
+    }
+    DEFAULT_FROM_EMAIL = _email_user
+else:
+    MAILERS = {
+        "default": {
+            "BACKEND": "django.core.mail.backends.console.EmailBackend",
+        },
+    }
+    DEFAULT_FROM_EMAIL = "Online Bookstore <no-reply@onlinebookstore.local>"
+
+# How long a password-reset link stays valid (seconds). Django's default is 3 days.
+PASSWORD_RESET_TIMEOUT = 60 * 60  # 1 hour
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
