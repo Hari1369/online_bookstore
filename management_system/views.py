@@ -243,34 +243,46 @@ def cart_add(request, product_id):
 @require_http_methods(["PUT"])
 @login_required_api
 def cart_update(request, item_id):
-    """UPDATE: change the quantity of one cart item (body: {"quantity": 3})."""
     try:
         item = CartItem.objects.select_related("product").get(pk=item_id, cart__user=request.user)
     except CartItem.DoesNotExist:
         return _error("Cart item not found.", 404)
 
     body = _json_body(request)
-    if body is None or "quantity" not in body:
+
+    if body is None:
+        return _error("Invalid JSON.")
+    
+    if "quantity" not in body:
         return _error("Send the new quantity as JSON, e.g. {\"quantity\": 2}.")
+
+
     try:
-        qty = int(body["quantity"])
+        quantity = int(body["quantity"])
     except (TypeError, ValueError):
         return _error("Quantity must be a whole number.")
-    if qty < 1:
-        return _error("Quantity must be at least 1. Use Remove to delete the item.")
+    if quantity < 1:
+        return _error("Quantity must be at least 1.")
 
     product = item.product
-    if not product.is_active:
-        return _error("This book is no longer available. Please remove it from your cart.")
-    if qty > product.available_copies:
-        return _error(f"Only {_copies(product.available_copies)} available.")
 
-    item.quantity = qty
-    item.save(update_fields=["quantity", "updated_at"])
+    if not product.is_active:
+        return _error("This book is no longer available.")
+    if quantity > product.available_copies:
+        return _error(f"Only {product.available_copies} copies available!")
+
+    item.quantity = quantity
+    item.save()
+
+    subtotal = product.price * quantity
 
     return JsonResponse({
         "message": "Quantity updated.",
-        "item": {"id": item.pk, "quantity": item.quantity, "subtotal": _money(product.price * qty)},
+        "item": {
+            "id": item.id,
+            "quantity": item.quantity,
+            "subtotal": _money(subtotal),
+        },
         "total": _money(_cart_total(request.user)),
         "cart_count": _cart_count(request.user),
     })
