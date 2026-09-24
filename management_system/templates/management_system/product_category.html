@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block title %}Book Category — Online Bookstore{% endblock %}
-
 {% block content %}
 
 <main class="category-page">
@@ -31,9 +30,7 @@
                         <div class="form-error">{{ form.choice.errors }}</div>
                     {% endif %}
                 </div>
-                <button type="submit" name="add_category" class="btn btn-primary btn-block">
-                    Add Category
-                </button>
+                <button type="submit" name="add_category" class="btn btn-primary btn-block">Add Category</button>
             </form>
         </div>
         
@@ -48,14 +45,11 @@
                         <div class="form-error">{{ csv_form.csv_file.errors }}</div>
                     {% endif %}
                 </div>
-                <button type="submit" name="upload_csv" class="btn btn-primary btn-block">
-                    Upload CSV
-                </button>
+                <button type="submit" name="upload_csv" class="btn btn-primary btn-block">Upload CSV</button>
             </form>
         </div>
     </div>
     
-
 
     <div class="category-card table-card">
         <h2>Existing Categories</h2>
@@ -73,32 +67,13 @@
                 <tbody>
                     {% for category in categories %}
                     <tr>
-                        <td class="col-id">
-                            {{ category.id }}
-                        </td>
-
-                        <td class="col-name">
-                            {{ category.choice }}
-                        </td>
-
-                        <td class="col-action">
-                            <button
-                                type="button"
-                                class="btn btn-primary"
-                                onclick="openUpdateModal(
-                                    '{{ category.id }}',
-                                    '{{ category.choice|escapejs }}'
-                                )">
-                                Update
-                            </button>
-                        </td>
+                        <td class="col-id">{{ category.id }}</td>
+                        <td class="col-name">{{ category.choice }}</td>
+                        <td class="col-action"><button type="button" class="btn btn-primary" onclick="openUpdateModal('{{ category.id }}','{{ category.choice|escapejs }}')">Update</button></td>
                     </tr>
-
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="no-data">
-                            No book categories available.
-                        </td>
+                        <td colspan="3" class="no-data">No book categories available</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -125,45 +100,55 @@
 
 
 <script>
-function updateCategory(categoryId, currentCategory) {
-    const newCategory = prompt("Enter new category name:", currentCategory);
-    if (newCategory === null) {
-        return;
-    }
-    const categoryName = newCategory.trim();
+// function updateCategory(categoryId, currentCategory) {
 
-    if (!categoryName) {
-        alert("Category name cannot be empty.");
-        return;
-    }
+//     console.log("CATEGORY ID : ", categoryId);
+//     console.log("CURRENT CATEGORY : ", currentCategory);
 
-    fetch(`/update_category/${categoryId}/`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: JSON.stringify({
-            choice: categoryName
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(data.error);
-            return;
-        }
-        alert(data.message);
-        location.reload();
-    })
-    .catch(error => {
-        console.error(error);
-        alert("Something went wrong.");
-    });
-}
+//     // const newCategory = prompt("Enter new category name:", currentCategory);
+//     // if (newCategory === null) {
+//     //     return;
+//     // }
+//     // const categoryName = newCategory.trim();
+
+//     // if (!categoryName) {
+//     //     alert("Category name cannot be empty.");
+//     //     return;
+//     // }
+
+//     // fetch(`/update_category/${categoryId}/`, {
+//     //     method: "PUT",
+//     //     headers: {
+//     //         "Content-Type": "application/json",
+//     //         "X-CSRFToken": "{{ csrf_token }}"
+//     //     },
+//     //     body: JSON.stringify({
+//     //         choice: categoryName
+//     //     })
+//     // })
+//     // .then(response => response.json())
+//     // .then(data => {
+//     //     if (data.error) {
+//     //         alert(data.error);
+//     //         return;
+//     //     }
+//     //     alert(data.message);
+//     //     location.reload();
+//     // })
+//     // .catch(error => {
+//     //     console.error(error);
+//     //     alert("Something went wrong.");
+//     // });
+// }
 
 var selectedCategoryId = null;
 function openUpdateModal(id, categoryName) {
+
+    // =================================================> DEBUGGER
+    console.log("ID : ", id);
+    console.log("CATEGORY NAME : ", categoryName);
+    // =================================================> DEBUGGER
+
     selectedCategoryId = id;
     document.getElementById("updatenamecategory").value = categoryName;
     document.getElementById("updateCategoryModal").style.display = "flex";
@@ -178,6 +163,10 @@ function closeUpdateModal() {
 
 function submitCategoryUpdate() {
     const categoryName = document.getElementById("updatenamecategory").value.trim();
+    // =================================================> DEBUGGER
+    console.log("CATEGORY NAME : ", categoryName);
+    // =================================================> DEBUGGER
+
     if (!categoryName) {
         alert("Category name cannot be empty.");
         return;
@@ -196,13 +185,16 @@ function submitCategoryUpdate() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log("ERROR RESPONSE : ", data.error);
         if (data.error) {
             alert(data.error);
             return;
+        } else {
+            console.log("SUCCESS RESPONSE : ", data.message);
+            closeUpdateModal();
+            alert(data.message);
+            location.reload();
         }
-        closeUpdateModal();
-        alert(data.message);
-        location.reload();
     })
     .catch(error => {
         console.error(error);
