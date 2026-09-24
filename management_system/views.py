@@ -230,8 +230,8 @@ def product_update(request, product_id):
         errors["author"] = ["Author is required."]
         
     try:
-        category = Category.objects.get(id=category_id)
-    except (Category.DoesNotExist, ValueError, TypeError):
+        category = ProductBookCategory.objects.get(id=category_id)
+    except (ProductBookCategory.DoesNotExist, ValueError, TypeError):
         errors["category"] = ["Select a valid category."]
 
     try:
