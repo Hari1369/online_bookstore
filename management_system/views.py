@@ -215,7 +215,8 @@ def cart_page(request):
 @require_POST
 @login_required_api
 def cart_add(request, product_id):
-    """ADD: put a book in the cart (body: {"quantity": 1}, quantity optional)."""
+    print("PRODUCT : ", product_id)
+
     body = _json_body(request) or {}
     try:
         qty = int(body.get("quantity", 1))

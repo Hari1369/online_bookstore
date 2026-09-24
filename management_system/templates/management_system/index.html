@@ -30,7 +30,7 @@
               {% if book.available_copies == 0 %}
                 <button type="button" class="add-cart-btn" disabled> Out of Stock </button>
               {% else %}
-                <button type="button" class="add-cart-btn" data-add-url="{% url 'cart_add' book.id %}" onclick="addToCart(this)" > Add to Cart </button>
+              <button type="button" class="add-cart-btn" data-book-id="{{ book.id }}" onclick="addToCart(this)"> Add to Cart </button>
               {% endif %}
               <button type="button" class="wishlist-btn" data-book-id="{{ book.id }}" onclick="addToWishlist(this)"> Add to Wishlist </button>
             </div>
@@ -49,7 +49,8 @@
 {% endblock %}
 {% block scripts %}
 
-<div id="shopToast" role="status"></div>
+<div id="errorMessage"></div>
+<div id="successMessage"></div>
 
 <script>
 const csrf = document.querySelector('meta[name="csrf-token"]').content;
@@ -79,6 +80,8 @@ const successMessage = document.getElementById('successMessage');
           return response.json();
       })
       .then(function(data) {
+          var error_message = data.error;
+          console.log("RESPONSE : ", error_message);
           if (data.error) {
               var error = data.error;
               document.getElementById('errorMessage').innerHTML = error;
@@ -87,6 +90,7 @@ const successMessage = document.getElementById('successMessage');
               return;
           }
           var message = data.message;
+          console.log("RESPONSE : ", message);
           document.getElementById('successMessage').innerHTML = message;
           document.getElementById('successMessage').style.display = 'block';
           btn.textContent = 'Added';
