@@ -1,26 +1,41 @@
-/* navbar.js — renders the top nav into <div id="navbar"></div> on every page */
+/* navbar.js — renders the top nav into <div id="navbar"></div> on every page.
+   Django template tags ({% url %}) are NOT processed in static JS files, so the
+   URLs and the login state are read from the data-* attributes that base.html
+   puts on #navbar (login state comes from Django's session, not localStorage). */
 
 function renderNavbar() {
   const mount = document.getElementById('navbar');
   if (!mount) return;
-  const user = Session.get();
+
+  const urls = {
+    main: mount.dataset.mainUrl || '/',
+    cart: mount.dataset.cartUrl || '#',
+    orders: mount.dataset.ordersUrl || '#',
+    login: mount.dataset.loginUrl || '#',
+    signup: mount.dataset.signupUrl || '#',
+    logout: mount.dataset.logoutUrl || ''
+  };
+
+  // Real login state from Django (set in base.html)
+  const isLoggedIn = mount.dataset.authenticated === 'true';
+  const displayName = (mount.dataset.userName || 'Account').split(' ')[0];
   const cartCount = Cart.count();
 
   mount.innerHTML = `
     <nav class="site-nav">
       <div class="wrap">
-        <a class="brand" href="{% url 'main' %}">Online Bookstore</a>
+        <a class="brand" href="${urls.main}">Online Bookstore</a>
         <form class="nav-search" id="navSearchForm" role="search">
           <label for="navSearchInput" class="visually-hidden">Search books</label>
           <input id="navSearchInput" type="search" placeholder="Search titles or authors…" />
         </form>
         <div class="nav-links">
-          <a href="{% url 'main' %}">Browse</a>
-          <a href="{% url 'cart' %}">Cart${cartCount ? `<span class="cart-count">${cartCount}</span>` : ''}</a>
-          ${user ? `<a href="{% url 'orders' %}">Orders</a>` : ''}
-          ${user
-            ? `<a href="#" id="navLogout">Log out (${escapeHTML(user.name.split(' ')[0])})</a>`
-            : `<a href="{% url 'login' %}">Log in</a><a href="{% url 'signup' %}">Sign up</a>`
+          <a href="${urls.main}">Browse</a>
+          <a href="${urls.cart}">Cart${cartCount ? `<span class="cart-count">${cartCount}</span>` : ''}</a>
+          ${isLoggedIn ? `<a href="${urls.orders}">Orders</a>` : ''}
+          ${isLoggedIn
+            ? `<a href="${urls.logout}" id="navLogout">Log out (${escapeHTML(displayName)})</a>`
+            : `<a href="${urls.login}">Log in</a><a href="${urls.signup}">Sign up</a>`
           }
         </div>
       </div>
@@ -32,16 +47,13 @@ function renderNavbar() {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const q = document.getElementById('navSearchInput').value.trim();
-    location.href = 'index.html' + (q ? '?q=' + encodeURIComponent(q) : '');
+    location.href = urls.main + (q ? '?q=' + encodeURIComponent(q) : '');
   });
 
+  // Also clear the old localStorage session; the link itself goes to Django's logout view.
   const logout = document.getElementById('navLogout');
   if (logout) {
-    logout.addEventListener('click', (e) => {
-      e.preventDefault();
-      Session.clear();
-      location.href = 'index.html';
-    });
+    logout.addEventListener('click', () => { Session.clear(); });
   }
 }
 

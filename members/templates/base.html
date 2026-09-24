@@ -9,15 +9,25 @@
 {% block extra_head %}{% endblock %}
 </head>
 <body>
-<div id="navbar"></div>
+<div id="navbar"
+     data-main-url="{% url 'main' %}"
+     data-cart-url="{% url 'cart' %}"
+     data-orders-url="{% url 'orders' %}"
+     data-login-url="{% url 'login' %}"
+     data-signup-url="{% url 'signup' %}"
+     data-logout-url="{% url 'logout' %}"
+     data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
+     data-user-name="{{ user.first_name|default:user.username }}"
+     data-is-staff="{% if user.is_staff %}true{% else %}false{% endif %}">
+</div>
 
 {% block content %}{% endblock %}
 
 <div id="modalRoot"></div>
 
-<script src="{% static 'js/store.js' %}"></script>
-<script src="{% static 'js/data.js' %}"></script>
-<script src="{% static 'js/navbar.js' %}"></script>
+<script src="{% static 'js/store.js' %}?v=2"></script>
+<script src="{% static 'js/data.js' %}?v=2"></script>
+<script src="{% static 'js/navbar.js' %}?v=2"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>
