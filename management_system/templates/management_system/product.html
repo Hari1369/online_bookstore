@@ -153,5 +153,19 @@
 {% endblock %}
 
 {% block scripts %}
+
+<script>
+$(document).ready(function () {
+
+    $("#id_category").select2({
+        placeholder: "Select Category",
+        width: "100%",
+        allowClear: true
+    });
+
+});
+</script>
+
 <script src="{% static 'js/product.js' %}"></script>
+
 {% endblock %}

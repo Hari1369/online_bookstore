@@ -7,6 +7,12 @@ from .views import (
     MeAPIView,
     BookListCreateAPIView,
     BookDetailAPIView,
+
+    CartAPIView,
+    CartItemAPIView,
+
+    OrderListCreateAPIView,
+    OrderDetailAPIView,
 )
 
 
@@ -56,4 +62,43 @@ urlpatterns = [
         BookDetailAPIView.as_view(),
         name="api_book_detail"
     ),
+
+
+
+
+    # =========================
+    # CART APIs
+    # =========================
+
+    path(
+        "cart/",
+        CartAPIView.as_view(),
+        name="api_cart"
+    ),
+
+    path(
+        "cart/<int:item_id>/",
+        CartItemAPIView.as_view(),
+        name="api_cart_item"
+    ),
+
+
+
+
+    # =========================
+    # ORDERS APIs
+    # =========================
+
+    path(
+        "orders/",
+        OrderListCreateAPIView.as_view(),
+        name="api_orders"
+    ),
+
+    path(
+        "orders/<int:order_id>/",
+        OrderDetailAPIView.as_view(),
+        name="api_order_detail"
+    ),
+
 ]
