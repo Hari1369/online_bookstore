@@ -10,18 +10,25 @@ from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.db import transaction
+from decimal import Decimal
+from django.utils import timezone
+import uuid
 
 from management_system.models import (
     ProductBookDetails,
     ProductBookCategory,
     CartItem,
     CartManagement,
+    Order,
+    OrderItem,
 )
 
 from .serializers import (
     SignupSerializer,
     UserSerializer,
     BookSerializer,
+    CartSerializer,
+    OrderSerializer
 )
 
 
@@ -574,16 +581,3 @@ class OrderDetailAPIView(APIView):
 
 
 
-# {
-#     "message": "Login successful.",
-#     "token": "c23246afe16f82b573c6baee4746da627849ec05",
-#     "user": {
-#         "id": 5,
-#         "username": "hari",
-#         "first_name": "Hari",
-#         "last_name": "Mondal",
-#         "email": "hari@gmail.com",
-#         "is_staff": false,
-#         "is_active": true
-#     }
-# }

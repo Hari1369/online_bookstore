@@ -1,0 +1,253 @@
+{
+  "info": {
+    "name": "Online Bookstore API",
+    "description": "REST API for the Online Bookstore Django project — auth, books, cart, and orders. Token auth via Django REST Framework.\n\nRun 'Auth > Signup' or 'Auth > Login' first; the response token is auto-saved to the {{token}} collection variable and reused by every other request.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "book_id", "value": "1", "type": "string" },
+    { "key": "item_id", "value": "1", "type": "string" },
+    { "key": "order_id", "value": "1", "type": "string" }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "key", "value": "Authorization", "type": "string" },
+      { "key": "value", "value": "Token {{token}}", "type": "string" },
+      { "key": "in", "value": "header", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const data = pm.response.json();",
+                  "  if (data.token) pm.collectionVariables.set('token', data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"hari123\",\n  \"email\": \"hari@gmail.com\",\n  \"password\": \"StrongPass123\",\n  \"first_name\": \"Hari\",\n  \"last_name\": \"Mondal\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/signup/", "host": [ "{{base_url}}" ], "path": [ "auth", "signup", "" ] },
+            "description": "Create a new account. Returns a DRF token and the created user. Public endpoint (no auth header needed).\n\nSample 201 response:\n{\n  \"message\": \"Account created successfully.\",\n  \"token\": \"<token>\",\n  \"user\": { \"id\": 3, \"username\": \"hari123\", \"first_name\": \"Hari\", \"last_name\": \"Mondal\", \"email\": \"hari@gmail.com\", \"is_staff\": false, \"is_active\": true }\n}\n\n400 on validation errors (e.g. password shorter than 6 chars, duplicate username/email)."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  if (data.token) pm.collectionVariables.set('token', data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"hari123\",\n  \"password\": \"StrongPass123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login/", "host": [ "{{base_url}}" ], "path": [ "auth", "login", "" ] },
+            "description": "Log in with username + password. Returns the user's existing (or newly created) DRF token.\n\n200 -> { \"message\": \"Login successful.\", \"token\": \"<token>\", \"user\": {...} }\n400 -> missing username/password\n401 -> invalid credentials"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/auth/logout/", "host": [ "{{base_url}}" ], "path": [ "auth", "logout", "" ] },
+            "description": "Deletes the current auth token (requires a valid token). 200 -> { \"message\": \"Logout successful.\" }"
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/auth/me/", "host": [ "{{base_url}}" ], "path": [ "auth", "me", "" ] },
+            "description": "Returns the current authenticated user's profile."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "List Books",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/books/", "host": [ "{{base_url}}" ], "path": [ "books", "" ] },
+            "description": "Lists all active books, newest first. Requires a valid token (any authenticated user)."
+          }
+        },
+        {
+          "name": "Create Book (admin only)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\": \"978-3-16-148410-0\",\n  \"title\": \"Sample Book Title\",\n  \"author\": \"Jane Doe\",\n  \"description\": \"A short description of the book.\",\n  \"category\": 1,\n  \"price\": \"19.99\",\n  \"publication_year\": 2024,\n  \"total_copies\": 10,\n  \"available_copies\": 10\n}"
+            },
+            "url": { "raw": "{{base_url}}/books/", "host": [ "{{base_url}}" ], "path": [ "books", "" ] },
+            "description": "Creates a book. Requires request.user.is_superuser = true, otherwise 403.\n\n'category' is the numeric ID of an existing ProductBookCategory.\nTo also upload 'image' / 'pdf' files, switch the body to form-data instead of raw JSON and add those two fields as File type."
+          }
+        },
+        {
+          "name": "Get Book Detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/books/{{book_id}}/", "host": [ "{{base_url}}" ], "path": [ "books", "{{book_id}}", "" ] },
+            "description": "Returns a single book by ID."
+          }
+        },
+        {
+          "name": "Update Book (admin only)",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\": \"978-3-16-148410-0\",\n  \"title\": \"Sample Book Title (Updated)\",\n  \"author\": \"Jane Doe\",\n  \"description\": \"Updated description.\",\n  \"category\": 1,\n  \"price\": \"24.99\",\n  \"publication_year\": 2024,\n  \"total_copies\": 12,\n  \"available_copies\": 8\n}"
+            },
+            "url": { "raw": "{{base_url}}/books/{{book_id}}/", "host": [ "{{base_url}}" ], "path": [ "books", "{{book_id}}", "" ] },
+            "description": "Updates a book. Requires admin (superuser). 'available_copies' cannot exceed 'total_copies' (400 if it does)."
+          }
+        },
+        {
+          "name": "Delete (Deactivate) Book (admin only)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/books/{{book_id}}/", "host": [ "{{base_url}}" ], "path": [ "books", "{{book_id}}", "" ] },
+            "description": "Soft-deletes a book by setting is_active = false (it stops appearing in the list endpoint). Requires admin."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/cart/", "host": [ "{{base_url}}" ], "path": [ "cart", "" ] },
+            "description": "Returns (or creates) the current user's cart, with line items and total."
+          }
+        },
+        {
+          "name": "Add Item to Cart",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": {{book_id}},\n  \"quantity\": 1\n}"
+            },
+            "url": { "raw": "{{base_url}}/cart/", "host": [ "{{base_url}}" ], "path": [ "cart", "" ] },
+            "description": "Adds a book to the cart (or increases quantity if it's already in the cart). Validates against the book's available_copies. 'product' is a book ID."
+          }
+        },
+        {
+          "name": "Update Cart Item Quantity",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 2\n}"
+            },
+            "url": { "raw": "{{base_url}}/cart/{{item_id}}/", "host": [ "{{base_url}}" ], "path": [ "cart", "{{item_id}}", "" ] },
+            "description": "Updates the quantity of a cart item you own. item_id is the CartItem ID (not the book ID)."
+          }
+        },
+        {
+          "name": "Remove Cart Item",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/cart/{{item_id}}/", "host": [ "{{base_url}}" ], "path": [ "cart", "{{item_id}}", "" ] },
+            "description": "Removes an item from the cart and returns the updated cart."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List My Orders",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/orders/", "host": [ "{{base_url}}" ], "path": [ "orders", "" ] },
+            "description": "Lists the current user's orders, newest first."
+          }
+        },
+        {
+          "name": "Place Order (checkout)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/orders/", "host": [ "{{base_url}}" ], "path": [ "orders", "" ] },
+            "description": "Converts the current user's cart into an order (atomic: validates stock, decrements available_copies, clears the cart). No request body needed. 400 if the cart is empty or a book is out of stock/inactive."
+          }
+        },
+        {
+          "name": "Get Order Detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/orders/{{order_id}}/", "host": [ "{{base_url}}" ], "path": [ "orders", "{{order_id}}", "" ] },
+            "description": "Returns one order. Regular users can only view their own orders; superusers can view any order."
+          }
+        },
+        {
+          "name": "Update Order Status (admin only)",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SHIPPED\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/orders/{{order_id}}/", "host": [ "{{base_url}}" ], "path": [ "orders", "{{order_id}}", "" ] },
+            "description": "Updates order status. Requires admin. Valid statuses: PENDING, SHIPPED, DELIVERED, CANCELLED."
+          }
+        },
+        {
+          "name": "Delete Order (admin only)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/orders/{{order_id}}/", "host": [ "{{base_url}}" ], "path": [ "orders", "{{order_id}}", "" ] },
+            "description": "Permanently deletes an order. Requires admin."
+          }
+        }
+      ]
+    }
+  ]
+}
