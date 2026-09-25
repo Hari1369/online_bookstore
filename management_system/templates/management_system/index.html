@@ -27,18 +27,30 @@
     <!-- Category -->
     <div class="filter-group">
         <label for="category">Category</label>
-
         <select name="category" id="category">
-            <option value="">All Categories</option>
+            <option value=""></option>
 
-            {% for category in categories %}
+                {% for category in categories %}
+
+                    <option value="{{ category.id }}"
+                        {% if selected_category == category.id|stringformat:"s" %}
+                            selected
+                        {% endif %}>
+
+                        {{ category.choice }}
+
+                    </option>
+
+                {% endfor %}
+
+            <!-- {% for category in categories %}
                 <option value="{{ category.id }}"
                     {% if selected_category == category.id|stringformat:"s" %}
                         selected
                     {% endif %}>
                     {{ category.choice }}
                 </option>
-            {% endfor %}
+            {% endfor %} -->
         </select>
     </div>
 
@@ -134,6 +146,17 @@
 <div id="successMessage"></div>
 
 <script>
+
+$(document).ready(function () {
+
+    $("#category").select2({
+        placeholder: "Select Category",
+        width: "100%",
+        allowClear: true
+    });
+
+});
+
 const csrf = document.querySelector('meta[name="csrf-token"]').content;
 const loginUrl = document.getElementById('navbar').dataset.loginUrl;
 const errorMessage = document.getElementById('errorMessage');
